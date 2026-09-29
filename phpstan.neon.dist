@@ -1,0 +1,17 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 8
+    # The plugin runs from PHP 7.4 (WordPress 5.3) up to PHP 8.5.
+    phpVersion:
+        min: 70400
+        max: 80500
+    paths:
+        - chatpuff.php
+        - uninstall.php
+        - includes
+    scanFiles:
+        - vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+    bootstrapFiles:
+        - tests/phpstan/constants.php

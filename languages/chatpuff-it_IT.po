@@ -1,0 +1,288 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ChatPuff live chat 0.1.0\n"
+"Report-Msgid-Bugs-To: support@chatpuff.com\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: chatpuff\n"
+"Language: it_IT\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: class-admin.php:210
+msgid "ChatPuff inbox"
+msgstr "Posta in arrivo ChatPuff"
+
+#: class-admin.php:70
+msgid "Inbox"
+msgstr "Posta in arrivo"
+
+#: class-admin.php:262
+msgid "ChatPuff settings"
+msgstr "Impostazioni di ChatPuff"
+
+#: class-admin.php:84
+msgid "Settings"
+msgstr "Impostazioni"
+
+#: class-admin.php:213
+msgid "This site is not connected to ChatPuff yet."
+msgstr "Questo sito non è ancora collegato a ChatPuff."
+
+#: class-admin.php:442
+msgid "Connect to ChatPuff"
+msgstr "Collega a ChatPuff"
+
+#: class-admin.php:217
+msgid "Ask an administrator of this site to connect it in ChatPuff > Settings."
+msgstr "Chiedi a un amministratore di questo sito di collegarlo in ChatPuff > Impostazioni."
+
+#: class-admin.php:232
+msgid "Your browser blocked the ChatPuff window. Allow pop-ups for this site and try again."
+msgstr "Il browser ha bloccato la finestra di ChatPuff. Consenti i pop-up per questo sito e riprova."
+
+#: class-admin.php:233
+msgid "The ChatPuff inbox could not be loaded. Check your internet connection and reload the page."
+msgstr "Non è stato possibile caricare la posta in arrivo di ChatPuff. Controlla la connessione a internet e ricarica la pagina."
+
+#: class-admin.php:234
+msgid "Loading the inbox…"
+msgstr "Caricamento della posta in arrivo…"
+
+#: class-admin.php:236
+msgid "Link your ChatPuff account"
+msgstr "Collega il tuo account ChatPuff"
+
+#: class-admin.php:237
+msgid "To answer chats here, link your WordPress account to your ChatPuff account once. A ChatPuff window opens where you sign in and confirm."
+msgstr "Per rispondere alle chat qui, collega una volta il tuo account WordPress al tuo account ChatPuff. Si apre una finestra di ChatPuff in cui accedi e confermi."
+
+#: class-admin.php:238
+msgid "Link my ChatPuff account"
+msgstr "Collega il mio account ChatPuff"
+
+#: class-admin.php:240
+msgid "Waiting for you to confirm in the ChatPuff window…"
+msgstr "In attesa della tua conferma nella finestra di ChatPuff…"
+
+#: class-admin.php:242
+msgid "Your ChatPuff account has no access to this shop's chats. Ask an owner or admin of your ChatPuff organization to give you access, or link another account."
+msgstr "Il tuo account ChatPuff non ha accesso alle chat di questo negozio. Chiedi a un proprietario o amministratore della tua organizzazione in ChatPuff di darti accesso, oppure collega un altro account."
+
+#: class-admin.php:243
+msgid "Link another account"
+msgstr "Collega un altro account"
+
+#: class-admin.php:247
+msgid "The inbox needs JavaScript."
+msgstr "La posta in arrivo richiede JavaScript."
+
+#: class-admin.php:258
+msgid "Sorry, you are not allowed to access this page."
+msgstr "Non hai il permesso di accedere a questa pagina."
+
+#: class-admin.php:270
+msgid "ChatPuff needs WooCommerce. Activate WooCommerce, then connect the shop here."
+msgstr "ChatPuff ha bisogno di WooCommerce. Attiva WooCommerce, poi collega qui il negozio."
+
+#: class-admin.php:275
+msgid "This site does not use HTTPS. ChatPuff needs HTTPS to check the shop when you connect it."
+msgstr "Questo sito non usa HTTPS. ChatPuff ha bisogno di HTTPS per verificare il negozio quando lo colleghi."
+
+#: class-admin.php:358
+msgid "This shop is connected to ChatPuff."
+msgstr "Questo negozio è collegato a ChatPuff."
+
+#: class-admin.php:361
+msgid "Organization"
+msgstr "Organizzazione"
+
+#: class-admin.php:362
+msgid "Shop"
+msgstr "Negozio"
+
+#: class-admin.php:363
+msgid "Chat widget"
+msgstr "Widget della chat"
+
+#: class-admin.php:363
+msgid "Published"
+msgstr "Pubblicato"
+
+#: class-admin.php:363
+msgid "Not published yet: publish it from the ChatPuff dashboard when you are ready."
+msgstr "Non ancora pubblicato: pubblicalo dalla dashboard di ChatPuff quando vuoi."
+
+#: class-admin.php:364
+msgid "Privacy policy page"
+msgstr "Pagina dell'informativa sulla privacy"
+
+#: class-admin.php:369
+msgid "None"
+msgstr "Nessuna"
+
+#: class-admin.php:371
+msgid "The chat links to this page where it asks customers for their name and email."
+msgstr "La chat rimanda a questa pagina dove chiede ai clienti nome ed email."
+
+#: class-admin.php:373
+msgid "Choose it in Settings > Privacy."
+msgstr "Sceglila in Impostazioni > Privacy."
+
+#: class-admin.php:377
+msgid "Open the ChatPuff dashboard"
+msgstr "Apri la dashboard di ChatPuff"
+
+#: class-admin.php:378
+msgid "Open the inbox"
+msgstr "Apri la posta in arrivo"
+
+#: class-admin.php:379
+msgid "Disconnect"
+msgstr "Scollega"
+
+#: class-admin.php:379
+msgid "Disconnect this shop from ChatPuff? Its chat history stays in ChatPuff."
+msgstr "Scollegare questo negozio da ChatPuff? La cronologia delle chat resta in ChatPuff."
+
+#. translators: 1: this site's address, 2: the address it was connected with
+#: class-admin.php:392
+#, php-format
+msgid "This site's address (%1$s) is not the one it was connected with (%2$s). It looks like a copy of your shop, such as a staging site, so the connection is paused here: a copy must never act for your live shop."
+msgstr "L'indirizzo di questo sito (%1$s) non è quello con cui è stato collegato (%2$s). Sembra una copia del tuo negozio, ad esempio un sito di prova, quindi qui il collegamento è in pausa: una copia non deve mai agire per il tuo negozio online."
+
+#: class-admin.php:397
+msgid "Disconnecting this copy leaves your live shop connected. You can then connect this copy as a separate shop."
+msgstr "Scollegando questa copia, il tuo negozio online resta collegato. Poi puoi collegare questa copia come negozio separato."
+
+#: class-admin.php:398
+msgid "Disconnect this copy"
+msgstr "Scollega questa copia"
+
+#: class-admin.php:405
+msgid "The ChatPuff key of this site can no longer be read, because the site's security keys (in wp-config.php) changed. Connect again: the shop keeps its chats and settings in ChatPuff."
+msgstr "La chiave ChatPuff di questo sito non è più leggibile, perché le chiavi di sicurezza del sito (in wp-config.php) sono cambiate. Collegati di nuovo: il negozio mantiene chat e impostazioni in ChatPuff."
+
+#: class-admin.php:406
+msgid "Connect again"
+msgstr "Collega di nuovo"
+
+#: class-admin.php:415
+msgid "Confirm the connection in ChatPuff"
+msgstr "Conferma il collegamento in ChatPuff"
+
+#: class-admin.php:416
+msgid "Sign in to ChatPuff, or create a free account, and confirm this shop. This page updates by itself."
+msgstr "Accedi a ChatPuff, o crea un account gratuito, e conferma questo negozio. Questa pagina si aggiorna da sola."
+
+#: class-admin.php:417
+msgid "Open ChatPuff to confirm"
+msgstr "Apri ChatPuff per confermare"
+
+#: class-admin.php:418
+msgid "Waiting for your confirmation…"
+msgstr "In attesa della tua conferma…"
+
+#: class-admin.php:419
+msgid "Start again"
+msgstr "Ricomincia"
+
+#: class-admin.php:436
+msgid "The confirmation link expired before it was used. Please start again."
+msgstr "Il link di conferma è scaduto prima di essere usato. Ricomincia."
+
+#: class-admin.php:438
+msgid "Connect this shop to ChatPuff"
+msgstr "Collega questo negozio a ChatPuff"
+
+#: class-admin.php:439
+msgid "Chat live with your customers from this WordPress admin, the ChatPuff dashboard or your phone. Connecting takes a minute: sign in to ChatPuff, or create a free account, and confirm the shop."
+msgstr "Chatta dal vivo con la tua clientela da quest'area di amministrazione WordPress, dalla dashboard di ChatPuff o dal telefono. Il collegamento richiede un minuto: accedi a ChatPuff, o crea un account gratuito, e conferma il negozio."
+
+#. translators: %s: the shop's domain
+#: class-admin.php:441
+#, php-format
+msgid "Shop address: %s"
+msgstr "Indirizzo del negozio: %s"
+
+#: class-admin.php:450
+msgid "ChatPuff checks the shop by calling this address:"
+msgstr "ChatPuff verifica il negozio chiamando questo indirizzo:"
+
+#: class-admin.php:451
+msgid "Behind Cloudflare, the bot protection often blocks this check. In Cloudflare, add a custom rule (Security > WAF > Custom rules, or Security rules in the newer dashboard) with this expression:"
+msgstr "Dietro Cloudflare, la protezione dai bot blocca spesso questa verifica. In Cloudflare, aggiungi una regola personalizzata (Security > WAF > Custom rules, o Security rules nella dashboard più recente) con questa espressione:"
+
+#: class-admin.php:453
+msgid "Choose the action Skip. Tick \"All remaining custom rules\", and under the other components \"Security Level\" and \"Browser Integrity Check\". Place the rule first, save it, then connect again."
+msgstr "Scegli l'azione Skip. Spunta «All remaining custom rules» e, tra gli altri componenti, «Security Level» e «Browser Integrity Check». Metti la regola al primo posto, salvala e collega di nuovo."
+
+#: class-admin.php:454
+msgid "Cloudflare's Bot Fight Mode cannot be skipped by a rule: switch it off while you connect. A security plugin that blocks the WordPress REST API for visitors, a maintenance-mode plugin, another firewall or a password on the site must let requests to this address through."
+msgstr "Il Bot Fight Mode di Cloudflare non si può saltare con una regola: disattivalo mentre colleghi. Un plugin di sicurezza che blocca la REST API di WordPress per i visitatori, un plugin di manutenzione, un altro firewall o una password sul sito devono lasciar passare le richieste verso questo indirizzo."
+
+#: class-admin.php:489
+msgid "Sorry, you are not allowed to do that."
+msgstr "Non hai il permesso di farlo."
+
+#: class-admin.php:520
+msgid "Your session expired. Please reload the page and try again."
+msgstr "La sessione è scaduta. Ricarica la pagina e riprova."
+
+#: class-admin.php:577
+msgid "ChatPuff could not be reached. Check that your server can make outgoing HTTPS connections, then try again."
+msgstr "Impossibile raggiungere ChatPuff. Controlla che il server possa effettuare connessioni HTTPS in uscita, poi riprova."
+
+#: class-admin.php:580
+msgid "Too many attempts. Please wait a few minutes and try again."
+msgstr "Troppi tentativi. Attendi qualche minuto e riprova."
+
+#: class-admin.php:583
+msgid "This site is not connected to ChatPuff."
+msgstr "Questo sito non è collegato a ChatPuff."
+
+#. translators: 1: an error code, 2: an error reference for ChatPuff support
+#: class-admin.php:587
+#, php-format
+msgid "ChatPuff could not complete the request (%1$s). Error reference: %2$s"
+msgstr "ChatPuff non è riuscito a completare la richiesta (%1$s). Riferimento dell'errore: %2$s"
+
+#: class-admin.php:598
+msgid "ChatPuff could not reach this shop to check it. Make sure the site is online over HTTPS and not in maintenance mode, and that no firewall blocks ChatPuff. Then try again."
+msgstr "ChatPuff non è riuscito a raggiungere questo negozio per verificarlo. Assicurati che il sito sia online in HTTPS e non in modalità manutenzione, e che nessun firewall blocchi ChatPuff. Poi riprova."
+
+#: class-admin.php:600
+msgid "This shop address is already connected to another ChatPuff account. Contact ChatPuff support to move it."
+msgstr "L'indirizzo di questo negozio è già collegato a un altro account ChatPuff. Contatta l'assistenza ChatPuff per trasferirlo."
+
+#: class-admin.php:602
+msgid "This WordPress is already connected to another ChatPuff organization. Contact ChatPuff support to move it."
+msgstr "Questo WordPress è già collegato a un'altra organizzazione ChatPuff. Contatta l'assistenza ChatPuff per trasferirlo."
+
+#: class-admin.php:604
+msgid "This shop was connected under another address. Contact ChatPuff support to change it."
+msgstr "Questo negozio è stato collegato con un altro indirizzo. Contatta l'assistenza ChatPuff per cambiarlo."
+
+#: class-admin.php:606
+msgid "The connection was cancelled in ChatPuff. You can start again at any time."
+msgstr "Il collegamento è stato annullato in ChatPuff. Puoi ricominciare in qualsiasi momento."
+
+#: class-admin.php:608
+msgid "The shop was not connected."
+msgstr "Il negozio non è stato collegato."
+
+#. translators: %d: the WordPress user ID
+#: class-back-office-inbox.php:102
+#, php-format
+msgid "User %d"
+msgstr "Utente %d"
+
+#. Plugin Name of the plugin
+#: chatpuff.php
+msgid "ChatPuff live chat"
+msgstr "ChatPuff chat dal vivo"
+
+#. Description of the plugin
+#: chatpuff.php
+msgid "Live chat with your customers, answered from your WordPress admin, the ChatPuff dashboard or your phone."
+msgstr "Chat dal vivo con la tua clientela, con risposte dall'amministrazione di WordPress, dalla dashboard di ChatPuff o dal telefono."

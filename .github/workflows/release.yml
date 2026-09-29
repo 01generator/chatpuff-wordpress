@@ -1,0 +1,69 @@
+name: Release
+
+# Builds the zip that shops install: the tracked files without development files (see the
+# export-ignore rules in .gitattributes). A tag such as v0.1.0 publishes it as a GitHub release; a
+# manual run only keeps it as a workflow artifact, for testing.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    name: Build the plugin zip
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+          tools: none
+
+      # The version is in three places: the plugin header, CHATPUFF_VERSION and the readme's Stable tag.
+      - name: Read the plugin version
+        run: |
+          header="$(sed -n 's/^ \* Version: *\([0-9][0-9.]*\)$/\1/p' chatpuff.php)"
+          constant="$(sed -n "s/.*'CHATPUFF_VERSION', '\([0-9][0-9.]*\)'.*/\1/p" chatpuff.php)"
+          stable="$(sed -n 's/^Stable tag: *\([0-9][0-9.]*\)$/\1/p' readme.txt)"
+          if [ -z "$header" ] || [ "$header" != "$constant" ] || [ "$header" != "$stable" ]; then
+            echo "::error::Versions differ: header '$header', CHATPUFF_VERSION '$constant', Stable tag '$stable'"
+            exit 1
+          fi
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$header" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME does not match the plugin version $header"
+            exit 1
+          fi
+          echo "VERSION=$header" >> "$GITHUB_ENV"
+
+      - name: Export the shipped files
+        run: |
+          mkdir -p build
+          git archive --format=tar --prefix=chatpuff/ HEAD | tar -x -C build
+
+      - name: Check the shipped PHP files with PHP 7.4
+        run: find build/chatpuff -name '*.php' -print0 | xargs -0 -n 1 -P 4 php -l > /dev/null
+
+      - name: Zip
+        working-directory: build
+        run: |
+          zip -q -r -9 "chatpuff-$VERSION.zip" chatpuff
+          unzip -l "chatpuff-$VERSION.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chatpuff-${{ env.VERSION }}
+          path: build/chatpuff-${{ env.VERSION }}.zip
+          retention-days: 30
+
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "build/chatpuff-$VERSION.zip" --title "ChatPuff for WooCommerce $VERSION" --generate-notes

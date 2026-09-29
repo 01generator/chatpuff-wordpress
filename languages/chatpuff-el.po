@@ -1,0 +1,288 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ChatPuff live chat 0.1.0\n"
+"Report-Msgid-Bugs-To: support@chatpuff.com\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: chatpuff\n"
+"Language: el\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: class-admin.php:210
+msgid "ChatPuff inbox"
+msgstr "Εισερχόμενα ChatPuff"
+
+#: class-admin.php:70
+msgid "Inbox"
+msgstr "Εισερχόμενα"
+
+#: class-admin.php:262
+msgid "ChatPuff settings"
+msgstr "Ρυθμίσεις ChatPuff"
+
+#: class-admin.php:84
+msgid "Settings"
+msgstr "Ρυθμίσεις"
+
+#: class-admin.php:213
+msgid "This site is not connected to ChatPuff yet."
+msgstr "Αυτός ο ιστότοπος δεν έχει συνδεθεί ακόμη με το ChatPuff."
+
+#: class-admin.php:442
+msgid "Connect to ChatPuff"
+msgstr "Σύνδεση με το ChatPuff"
+
+#: class-admin.php:217
+msgid "Ask an administrator of this site to connect it in ChatPuff > Settings."
+msgstr "Ζητήστε από έναν διαχειριστή του ιστότοπου να τον συνδέσει στο ChatPuff > Ρυθμίσεις."
+
+#: class-admin.php:232
+msgid "Your browser blocked the ChatPuff window. Allow pop-ups for this site and try again."
+msgstr "Ο φυλλομετρητής σας μπλόκαρε το παράθυρο του ChatPuff. Επιτρέψτε τα αναδυόμενα παράθυρα για αυτόν τον ιστότοπο και δοκιμάστε ξανά."
+
+#: class-admin.php:233
+msgid "The ChatPuff inbox could not be loaded. Check your internet connection and reload the page."
+msgstr "Δεν ήταν δυνατή η φόρτωση των εισερχομένων του ChatPuff. Ελέγξτε τη σύνδεσή σας στο διαδίκτυο και ανανεώστε τη σελίδα."
+
+#: class-admin.php:234
+msgid "Loading the inbox…"
+msgstr "Φόρτωση των εισερχομένων…"
+
+#: class-admin.php:236
+msgid "Link your ChatPuff account"
+msgstr "Συνδέστε τον λογαριασμό σας ChatPuff"
+
+#: class-admin.php:237
+msgid "To answer chats here, link your WordPress account to your ChatPuff account once. A ChatPuff window opens where you sign in and confirm."
+msgstr "Για να απαντάτε σε συνομιλίες εδώ, συνδέστε μία φορά τον λογαριασμό σας στο WordPress με τον λογαριασμό σας ChatPuff. Ανοίγει ένα παράθυρο του ChatPuff όπου συνδέεστε και επιβεβαιώνετε."
+
+#: class-admin.php:238
+msgid "Link my ChatPuff account"
+msgstr "Σύνδεση του λογαριασμού μου ChatPuff"
+
+#: class-admin.php:240
+msgid "Waiting for you to confirm in the ChatPuff window…"
+msgstr "Αναμονή για την επιβεβαίωσή σας στο παράθυρο του ChatPuff…"
+
+#: class-admin.php:242
+msgid "Your ChatPuff account has no access to this shop's chats. Ask an owner or admin of your ChatPuff organization to give you access, or link another account."
+msgstr "Ο λογαριασμός σας ChatPuff δεν έχει πρόσβαση στις συνομιλίες αυτού του καταστήματος. Ζητήστε από έναν κάτοχο ή διαχειριστή του οργανισμού σας στο ChatPuff να σας δώσει πρόσβαση ή συνδέστε άλλον λογαριασμό."
+
+#: class-admin.php:243
+msgid "Link another account"
+msgstr "Σύνδεση άλλου λογαριασμού"
+
+#: class-admin.php:247
+msgid "The inbox needs JavaScript."
+msgstr "Τα εισερχόμενα χρειάζονται JavaScript."
+
+#: class-admin.php:258
+msgid "Sorry, you are not allowed to access this page."
+msgstr "Δεν έχετε δικαίωμα πρόσβασης σε αυτή τη σελίδα."
+
+#: class-admin.php:270
+msgid "ChatPuff needs WooCommerce. Activate WooCommerce, then connect the shop here."
+msgstr "Το ChatPuff χρειάζεται το WooCommerce. Ενεργοποιήστε το WooCommerce και έπειτα συνδέστε το κατάστημα εδώ."
+
+#: class-admin.php:275
+msgid "This site does not use HTTPS. ChatPuff needs HTTPS to check the shop when you connect it."
+msgstr "Αυτός ο ιστότοπος δεν χρησιμοποιεί HTTPS. Το ChatPuff χρειάζεται HTTPS για να ελέγξει το κατάστημα κατά τη σύνδεση."
+
+#: class-admin.php:358
+msgid "This shop is connected to ChatPuff."
+msgstr "Αυτό το κατάστημα είναι συνδεδεμένο με το ChatPuff."
+
+#: class-admin.php:361
+msgid "Organization"
+msgstr "Οργανισμός"
+
+#: class-admin.php:362
+msgid "Shop"
+msgstr "Κατάστημα"
+
+#: class-admin.php:363
+msgid "Chat widget"
+msgstr "Παράθυρο συνομιλίας"
+
+#: class-admin.php:363
+msgid "Published"
+msgstr "Δημοσιευμένο"
+
+#: class-admin.php:363
+msgid "Not published yet: publish it from the ChatPuff dashboard when you are ready."
+msgstr "Δεν έχει δημοσιευτεί ακόμη: δημοσιεύστε το από τον πίνακα ελέγχου του ChatPuff όποτε θέλετε."
+
+#: class-admin.php:364
+msgid "Privacy policy page"
+msgstr "Σελίδα πολιτικής απορρήτου"
+
+#: class-admin.php:369
+msgid "None"
+msgstr "Καμία"
+
+#: class-admin.php:371
+msgid "The chat links to this page where it asks customers for their name and email."
+msgstr "Η συνομιλία παραπέμπει σε αυτή τη σελίδα εκεί όπου ζητά από τους πελάτες το όνομα και το email τους."
+
+#: class-admin.php:373
+msgid "Choose it in Settings > Privacy."
+msgstr "Επιλέξτε τη στις Ρυθμίσεις > Απόρρητο."
+
+#: class-admin.php:377
+msgid "Open the ChatPuff dashboard"
+msgstr "Άνοιγμα του πίνακα ελέγχου ChatPuff"
+
+#: class-admin.php:378
+msgid "Open the inbox"
+msgstr "Άνοιγμα των εισερχομένων"
+
+#: class-admin.php:379
+msgid "Disconnect"
+msgstr "Αποσύνδεση"
+
+#: class-admin.php:379
+msgid "Disconnect this shop from ChatPuff? Its chat history stays in ChatPuff."
+msgstr "Αποσύνδεση αυτού του καταστήματος από το ChatPuff; Το ιστορικό συνομιλιών του παραμένει στο ChatPuff."
+
+#. translators: 1: this site's address, 2: the address it was connected with
+#: class-admin.php:392
+#, php-format
+msgid "This site's address (%1$s) is not the one it was connected with (%2$s). It looks like a copy of your shop, such as a staging site, so the connection is paused here: a copy must never act for your live shop."
+msgstr "Η διεύθυνση αυτού του ιστότοπου (%1$s) δεν είναι αυτή με την οποία συνδέθηκε (%2$s). Φαίνεται να είναι αντίγραφο του καταστήματός σας, για παράδειγμα δοκιμαστικό site, γι' αυτό η σύνδεση είναι σε παύση εδώ: ένα αντίγραφο δεν πρέπει ποτέ να ενεργεί για το ζωντανό κατάστημά σας."
+
+#: class-admin.php:397
+msgid "Disconnecting this copy leaves your live shop connected. You can then connect this copy as a separate shop."
+msgstr "Η αποσύνδεση αυτού του αντιγράφου αφήνει το ζωντανό κατάστημά σας συνδεδεμένο. Έπειτα μπορείτε να συνδέσετε το αντίγραφο ως ξεχωριστό κατάστημα."
+
+#: class-admin.php:398
+msgid "Disconnect this copy"
+msgstr "Αποσύνδεση αυτού του αντιγράφου"
+
+#: class-admin.php:405
+msgid "The ChatPuff key of this site can no longer be read, because the site's security keys (in wp-config.php) changed. Connect again: the shop keeps its chats and settings in ChatPuff."
+msgstr "Το κλειδί ChatPuff αυτού του ιστότοπου δεν μπορεί πλέον να διαβαστεί, επειδή άλλαξαν τα κλειδιά ασφαλείας του ιστότοπου (στο wp-config.php). Συνδεθείτε ξανά: το κατάστημα κρατά τις συνομιλίες και τις ρυθμίσεις του στο ChatPuff."
+
+#: class-admin.php:406
+msgid "Connect again"
+msgstr "Νέα σύνδεση"
+
+#: class-admin.php:415
+msgid "Confirm the connection in ChatPuff"
+msgstr "Επιβεβαιώστε τη σύνδεση στο ChatPuff"
+
+#: class-admin.php:416
+msgid "Sign in to ChatPuff, or create a free account, and confirm this shop. This page updates by itself."
+msgstr "Συνδεθείτε στο ChatPuff ή δημιουργήστε δωρεάν λογαριασμό και επιβεβαιώστε αυτό το κατάστημα. Η σελίδα ενημερώνεται μόνη της."
+
+#: class-admin.php:417
+msgid "Open ChatPuff to confirm"
+msgstr "Άνοιγμα του ChatPuff για επιβεβαίωση"
+
+#: class-admin.php:418
+msgid "Waiting for your confirmation…"
+msgstr "Αναμονή για την επιβεβαίωσή σας…"
+
+#: class-admin.php:419
+msgid "Start again"
+msgstr "Έναρξη ξανά"
+
+#: class-admin.php:436
+msgid "The confirmation link expired before it was used. Please start again."
+msgstr "Ο σύνδεσμος επιβεβαίωσης έληξε πριν χρησιμοποιηθεί. Ξεκινήστε ξανά."
+
+#: class-admin.php:438
+msgid "Connect this shop to ChatPuff"
+msgstr "Συνδέστε αυτό το κατάστημα με το ChatPuff"
+
+#: class-admin.php:439
+msgid "Chat live with your customers from this WordPress admin, the ChatPuff dashboard or your phone. Connecting takes a minute: sign in to ChatPuff, or create a free account, and confirm the shop."
+msgstr "Συνομιλήστε ζωντανά με τους πελάτες σας από τη διαχείριση του WordPress, τον πίνακα ελέγχου του ChatPuff ή το κινητό σας. Η σύνδεση διαρκεί ένα λεπτό: συνδεθείτε στο ChatPuff ή δημιουργήστε δωρεάν λογαριασμό και επιβεβαιώστε το κατάστημα."
+
+#. translators: %s: the shop's domain
+#: class-admin.php:441
+#, php-format
+msgid "Shop address: %s"
+msgstr "Διεύθυνση καταστήματος: %s"
+
+#: class-admin.php:450
+msgid "ChatPuff checks the shop by calling this address:"
+msgstr "Το ChatPuff ελέγχει το κατάστημα καλώντας αυτή τη διεύθυνση:"
+
+#: class-admin.php:451
+msgid "Behind Cloudflare, the bot protection often blocks this check. In Cloudflare, add a custom rule (Security > WAF > Custom rules, or Security rules in the newer dashboard) with this expression:"
+msgstr "Πίσω από το Cloudflare, η προστασία από bots συχνά μπλοκάρει αυτόν τον έλεγχο. Στο Cloudflare, προσθέστε έναν προσαρμοσμένο κανόνα (Security > WAF > Custom rules, ή Security rules στο νεότερο dashboard) με αυτή την έκφραση:"
+
+#: class-admin.php:453
+msgid "Choose the action Skip. Tick \"All remaining custom rules\", and under the other components \"Security Level\" and \"Browser Integrity Check\". Place the rule first, save it, then connect again."
+msgstr "Επιλέξτε την ενέργεια Skip. Τσεκάρετε το «All remaining custom rules» και, στα υπόλοιπα στοιχεία, τα «Security Level» και «Browser Integrity Check». Βάλτε τον κανόνα πρώτο, αποθηκεύστε τον και συνδέστε ξανά."
+
+#: class-admin.php:454
+msgid "Cloudflare's Bot Fight Mode cannot be skipped by a rule: switch it off while you connect. A security plugin that blocks the WordPress REST API for visitors, a maintenance-mode plugin, another firewall or a password on the site must let requests to this address through."
+msgstr "Το Bot Fight Mode του Cloudflare δεν παρακάμπτεται με κανόνα: απενεργοποιήστε το όσο συνδέετε. Ένα πρόσθετο ασφαλείας που μπλοκάρει το REST API του WordPress για επισκέπτες, ένα πρόσθετο λειτουργίας συντήρησης, άλλο τείχος προστασίας ή κωδικός πρόσβασης στον ιστότοπο πρέπει να αφήνουν να περνούν τα αιτήματα προς αυτή τη διεύθυνση."
+
+#: class-admin.php:489
+msgid "Sorry, you are not allowed to do that."
+msgstr "Δεν έχετε δικαίωμα να το κάνετε αυτό."
+
+#: class-admin.php:520
+msgid "Your session expired. Please reload the page and try again."
+msgstr "Η συνεδρία σας έληξε. Φορτώστε ξανά τη σελίδα και δοκιμάστε ξανά."
+
+#: class-admin.php:577
+msgid "ChatPuff could not be reached. Check that your server can make outgoing HTTPS connections, then try again."
+msgstr "Δεν ήταν δυνατή η επικοινωνία με το ChatPuff. Ελέγξτε ότι ο διακομιστής σας μπορεί να κάνει εξερχόμενες συνδέσεις HTTPS και δοκιμάστε ξανά."
+
+#: class-admin.php:580
+msgid "Too many attempts. Please wait a few minutes and try again."
+msgstr "Πάρα πολλές προσπάθειες. Περιμένετε λίγα λεπτά και δοκιμάστε ξανά."
+
+#: class-admin.php:583
+msgid "This site is not connected to ChatPuff."
+msgstr "Αυτός ο ιστότοπος δεν είναι συνδεδεμένος με το ChatPuff."
+
+#. translators: 1: an error code, 2: an error reference for ChatPuff support
+#: class-admin.php:587
+#, php-format
+msgid "ChatPuff could not complete the request (%1$s). Error reference: %2$s"
+msgstr "Το ChatPuff δεν μπόρεσε να ολοκληρώσει το αίτημα (%1$s). Κωδικός αναφοράς σφάλματος: %2$s"
+
+#: class-admin.php:598
+msgid "ChatPuff could not reach this shop to check it. Make sure the site is online over HTTPS and not in maintenance mode, and that no firewall blocks ChatPuff. Then try again."
+msgstr "Το ChatPuff δεν μπόρεσε να επικοινωνήσει με αυτό το κατάστημα για να το ελέγξει. Βεβαιωθείτε ότι ο ιστότοπος λειτουργεί μέσω HTTPS, δεν είναι σε λειτουργία συντήρησης και ότι κανένα τείχος προστασίας δεν μπλοκάρει το ChatPuff. Έπειτα δοκιμάστε ξανά."
+
+#: class-admin.php:600
+msgid "This shop address is already connected to another ChatPuff account. Contact ChatPuff support to move it."
+msgstr "Η διεύθυνση αυτού του καταστήματος είναι ήδη συνδεδεμένη με άλλον λογαριασμό ChatPuff. Επικοινωνήστε με την υποστήριξη του ChatPuff για τη μεταφορά της."
+
+#: class-admin.php:602
+msgid "This WordPress is already connected to another ChatPuff organization. Contact ChatPuff support to move it."
+msgstr "Αυτό το WordPress είναι ήδη συνδεδεμένο με άλλον οργανισμό ChatPuff. Επικοινωνήστε με την υποστήριξη του ChatPuff για τη μεταφορά του."
+
+#: class-admin.php:604
+msgid "This shop was connected under another address. Contact ChatPuff support to change it."
+msgstr "Αυτό το κατάστημα συνδέθηκε με άλλη διεύθυνση. Επικοινωνήστε με την υποστήριξη του ChatPuff για να την αλλάξετε."
+
+#: class-admin.php:606
+msgid "The connection was cancelled in ChatPuff. You can start again at any time."
+msgstr "Η σύνδεση ακυρώθηκε στο ChatPuff. Μπορείτε να ξεκινήσετε ξανά οποιαδήποτε στιγμή."
+
+#: class-admin.php:608
+msgid "The shop was not connected."
+msgstr "Το κατάστημα δεν συνδέθηκε."
+
+#. translators: %d: the WordPress user ID
+#: class-back-office-inbox.php:102
+#, php-format
+msgid "User %d"
+msgstr "Χρήστης %d"
+
+#. Plugin Name of the plugin
+#: chatpuff.php
+msgid "ChatPuff live chat"
+msgstr "ChatPuff ζωντανή συνομιλία"
+
+#. Description of the plugin
+#: chatpuff.php
+msgid "Live chat with your customers, answered from your WordPress admin, the ChatPuff dashboard or your phone."
+msgstr "Ζωντανή συνομιλία με τους πελάτες σας, με απαντήσεις από τη διαχείριση του WordPress, τον πίνακα ελέγχου του ChatPuff ή το κινητό σας."

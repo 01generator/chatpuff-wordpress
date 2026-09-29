@@ -1,0 +1,30 @@
+{
+    "name": "chatpuff/chatpuff-wordpress",
+    "description": "ChatPuff live chat for WooCommerce. Development tools only: the plugin itself has no Composer dependencies.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "wp-coding-standards/wpcs": "^3.1",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/phpstan": "^2.1",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "php-stubs/woocommerce-stubs": "^10.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "platform": {
+            "php": "7.4.33"
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "cs": "phpcs",
+        "cs-fix": "phpcbf",
+        "stan": "phpstan analyse --memory-limit=1G"
+    }
+}

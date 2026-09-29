@@ -1,0 +1,78 @@
+/**
+ * ChatPuff live chat for WooCommerce: the settings and inbox pages.
+ *
+ * @package ChatPuff
+ * @license GPL-2.0-or-later
+ */
+
+.chatpuff-title img {
+	vertical-align: middle;
+	margin-right: 4px;
+}
+
+.chatpuff-card {
+	max-width: 760px;
+	padding: 8px 20px 16px;
+}
+
+.chatpuff-card .notice.inline {
+	margin: 12px 0;
+}
+
+.chatpuff-muted {
+	color: #646970;
+}
+
+.chatpuff-muted .spinner {
+	float: none;
+	margin: 0 4px 0 0;
+	vertical-align: middle;
+}
+
+.chatpuff-details {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 8px 16px;
+	margin: 12px 0 16px;
+}
+
+.chatpuff-details dt {
+	font-weight: 600;
+}
+
+.chatpuff-details dd {
+	margin: 0;
+}
+
+.chatpuff-inline {
+	display: inline-block;
+	margin: 0 8px 0 0;
+}
+
+.chatpuff-help code {
+	word-break: break-all;
+}
+
+.chatpuff-rule {
+	white-space: pre-wrap;
+	user-select: all;
+	margin: 0 0 10px;
+	padding: 8px 10px;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+}
+
+.chatpuff-backoffice [hidden] {
+	display: none !important;
+}
+
+.chatpuff-backoffice .notice {
+	padding: 10px 12px;
+}
+
+/* The inbox draws itself inside this box, in its own shadow root. */
+.chatpuff-inbox {
+	height: calc(100vh - 170px);
+	min-height: 520px;
+	margin-top: 12px;
+}
