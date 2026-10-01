@@ -4,7 +4,7 @@ Tags: live chat, chat, customer support, woocommerce, help desk
 Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,7 @@ ChatPuff adds a live chat to your WooCommerce shop. Your customers chat from any
 * **Six languages** for the chat and the inbox: English, Greek, Spanish, Italian, French and German.
 * **Opening hours and holidays**: outside them, the chat takes messages for later.
 * **Fast and safe for your shop:** the chat's script loads asynchronously, never slows a page down, and draws itself apart from your theme's styles.
+* **Ready for ChatPuff's AI assistant:** the plugin sends your published products, product categories and pages to ChatPuff, so that the assistant can answer customers from them once you turn it on in ChatPuff.
 
 The chat and the inbox are served by ChatPuff, so improvements reach your shop without a plugin update. The plugin itself only connects the shop, adds the chat's script and vouches for who is signed in.
 
@@ -28,7 +29,7 @@ The chat and the inbox are served by ChatPuff, so improvements reach your shop w
 This plugin connects your shop to **ChatPuff** (https://chatpuff.com), a hosted customer-support service operated from Greece, with its data stored in Germany. Without it, the plugin does nothing. What is sent, and when:
 
 * **When an administrator connects the shop:** the site's address and name, its language and time zone, the address ChatPuff calls to check the site (a REST API route of this plugin), a public key created on your server (the private key never leaves it), and the versions of WordPress, WooCommerce, PHP and the plugin.
-* **Every hour while connected:** the same versions again, as a heartbeat.
+* **Every hour while connected:** the same versions again, as a heartbeat; and, for the AI assistant's knowledge, the published products (name, SKU, categories, price, availability and descriptions), product categories (name, description) and pages (title, content) that changed since the last hour, with their addresses. Nothing about customers or orders.
 * **On storefront pages:** visitors' browsers load the chat's script from api.chatpuff.com. What a visitor types in the chat (their name, email address and messages) goes to ChatPuff. For a logged-in customer, the page carries a short-lived token, signed by your server, with the customer's user ID, name and email address, so the chat knows who they are.
 * **In the WordPress admin:** the inbox's script is loaded from api.chatpuff.com. The plugin asks ChatPuff for 15-minute access tokens for the signed-in user; the first time, it sends their user ID and first name with an initial so they can link their ChatPuff account.
 
@@ -73,6 +74,9 @@ Yes. The plugin reads no orders and works with both.
 Deactivating hides the chat and keeps the connection, so reactivating needs no new connection. Deleting the plugin disconnects the shop from ChatPuff; its chat history stays in ChatPuff.
 
 == Changelog ==
+
+= 0.2.0 =
+* The plugin sends the shop's published products, product categories and pages to ChatPuff for the AI assistant's knowledge, a little at a time within each hour; the settings page shows where the synchronization stands and has a Synchronize now button.
 
 = 0.1.0 =
 * First version: connect the shop, the chat on the storefront, logged-in customers recognised, the ChatPuff inbox in the WordPress admin, the hourly report, and six languages.

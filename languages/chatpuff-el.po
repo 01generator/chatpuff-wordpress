@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: ChatPuff live chat 0.1.0\n"
+"Project-Id-Version: ChatPuff live chat 0.2.0\n"
 "Report-Msgid-Bugs-To: support@chatpuff.com\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -286,3 +286,53 @@ msgstr "ChatPuff ζωντανή συνομιλία"
 #: chatpuff.php
 msgid "Live chat with your customers, answered from your WordPress admin, the ChatPuff dashboard or your phone."
 msgstr "Ζωντανή συνομιλία με τους πελάτες σας, με απαντήσεις από τη διαχείριση του WordPress, τον πίνακα ελέγχου του ChatPuff ή το κινητό σας."
+
+#: class-admin.php
+msgid "Knowledge for the AI assistant"
+msgstr "Γνώση για τον βοηθό AI"
+
+#: class-admin.php
+msgid "The plugin sends this shop's published products, product categories and pages to ChatPuff every hour, so the assistant can answer from them. Choose what it may use on the ChatPuff dashboard; nothing about customers is sent."
+msgstr "Το πρόσθετο στέλνει στο ChatPuff κάθε ώρα τα δημοσιευμένα προϊόντα, τις κατηγορίες προϊόντων και τις σελίδες αυτού του καταστήματος, ώστε ο βοηθός να απαντά από αυτά. Επιλέξτε τι μπορεί να χρησιμοποιεί στο dashboard του ChatPuff· τίποτα για τους πελάτες δεν αποστέλλεται."
+
+#. translators: %s: a date and time
+#: class-admin.php
+msgid "Last complete synchronization: %s."
+msgstr "Τελευταίος πλήρης συγχρονισμός: %s."
+
+#: class-admin.php
+msgid "Not synchronized yet."
+msgstr "Δεν έχει συγχρονιστεί ακόμη."
+
+#: class-admin.php
+msgid "A synchronization is in progress and continues in the background."
+msgstr "Ένας συγχρονισμός βρίσκεται σε εξέλιξη και συνεχίζεται στο παρασκήνιο."
+
+#. translators: %s: an error code
+#: class-admin.php
+msgid "The last attempt failed (%s); it is retried automatically."
+msgstr "Η τελευταία προσπάθεια απέτυχε (%s)· επαναλαμβάνεται αυτόματα."
+
+#: class-admin.php
+msgid "Synchronize now"
+msgstr "Συγχρονισμός τώρα"
+
+#: class-knowledge.php
+msgid "SKU"
+msgstr "Κωδικός προϊόντος"
+
+#: class-knowledge.php
+msgid "Categories"
+msgstr "Κατηγορίες"
+
+#: class-knowledge.php
+msgid "Price"
+msgstr "Τιμή"
+
+#: class-knowledge.php
+msgid "In stock"
+msgstr "Σε απόθεμα"
+
+#: class-knowledge.php
+msgid "Out of stock"
+msgstr "Εξαντλημένο"

@@ -23,6 +23,7 @@ final class Plugin {
 		add_action( 'wp_enqueue_scripts', array( Storefront::class, 'enqueue' ) );
 		add_filter( 'script_loader_tag', array( Storefront::class, 'script_tag' ), 10, 3 );
 		add_action( Storefront::REPORT_HOOK, array( Storefront::class, 'report' ) );
+		add_action( Knowledge::HOOK, array( Knowledge::class, 'run' ) );
 		add_action( 'before_woocommerce_init', array( self::class, 'declare_compatibility' ) );
 		if ( is_admin() ) {
 			Admin::register();
@@ -30,11 +31,12 @@ final class Plugin {
 	}
 
 	/**
-	 * Translations, and the hourly report while connected.
+	 * Translations, and the hourly report and knowledge synchronization while connected.
 	 */
 	public static function init(): void {
 		load_plugin_textdomain( 'chatpuff', false, dirname( plugin_basename( CHATPUFF_FILE ) ) . '/languages' );
 		Storefront::schedule_report();
+		Knowledge::schedule();
 	}
 
 	/**
@@ -49,10 +51,12 @@ final class Plugin {
 	}
 
 	/**
-	 * Stops the hourly report; the connection stays, so reactivating needs no new pairing.
+	 * Stops the hourly report and the knowledge synchronization; the connection stays, so
+	 * reactivating needs no new pairing.
 	 */
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( Storefront::REPORT_HOOK );
+		wp_clear_scheduled_hook( Knowledge::HOOK );
 	}
 
 	/**

@@ -37,7 +37,7 @@ final class Admin {
 		add_action( 'admin_enqueue_scripts', array( self::class, 'assets' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( CHATPUFF_FILE ), array( self::class, 'action_links' ) );
 
-		foreach ( array( 'connect', 'disconnect', 'forget_copy', 'forget_unreadable' ) as $action ) {
+		foreach ( array( 'connect', 'disconnect', 'forget_copy', 'forget_unreadable', 'sync_knowledge' ) as $action ) {
 			add_action( 'admin_post_chatpuff_' . $action, array( self::class, 'post_' . $action ) );
 		}
 		add_action( 'wp_ajax_chatpuff_start_pairing', array( self::class, 'ajax_start_pairing' ) );
@@ -142,6 +142,25 @@ final class Admin {
 			static function ( Pairing $pairing ): void {
 				$pairing->forget_unreadable();
 				$pairing->start();
+			}
+		);
+	}
+
+	/**
+	 * A run of the knowledge synchronization now, with a larger budget than WP-Cron gives it
+	 * (api-contract.md §7.6); the page then shows where the pass stands.
+	 */
+	public static function post_sync_knowledge(): void {
+		self::settings_action(
+			static function ( Pairing $pairing ): void {
+				unset( $pairing );
+				if ( function_exists( 'set_time_limit' ) ) {
+					set_time_limit( Knowledge::ADMIN_BUDGET + 30 );
+				}
+				$cursor = ( new Knowledge( new Api_Client() ) )->pass( Knowledge::ADMIN_BUDGET );
+				if ( null !== $cursor['error'] ) {
+					throw new Api_Exception( esc_html( $cursor['error'] ), 0 );
+				}
 			}
 		);
 	}
@@ -374,9 +393,35 @@ final class Admin {
 			}
 			echo '</span></dd></dl>';
 		}
+		self::render_knowledge();
 		echo '<p><a class="button button-primary" href="' . esc_url( $dashboard ) . '" target="_blank" rel="noopener">' . esc_html__( 'Open the ChatPuff dashboard', 'chatpuff' ) . '</a> ';
 		echo '<a class="button" href="' . esc_url( admin_url( 'admin.php?page=' . self::INBOX_PAGE ) ) . '">' . esc_html__( 'Open the inbox', 'chatpuff' ) . '</a></p>';
 		self::form( 'disconnect', __( 'Disconnect', 'chatpuff' ), 'button', __( 'Disconnect this shop from ChatPuff? Its chat history stays in ChatPuff.', 'chatpuff' ) );
+	}
+
+	/**
+	 * What the plugin sends for the AI assistant's knowledge, and where the synchronization stands.
+	 */
+	private static function render_knowledge(): void {
+		$cursor = Knowledge::cursor();
+		echo '<h2 class="chatpuff-subtitle">' . esc_html__( 'Knowledge for the AI assistant', 'chatpuff' ) . '</h2>';
+		echo '<p class="chatpuff-muted">' . esc_html__( 'The plugin sends this shop\'s published products, product categories and pages to ChatPuff every hour, so the assistant can answer from them. Choose what it may use on the ChatPuff dashboard; nothing about customers is sent.', 'chatpuff' ) . '</p>';
+		echo '<p>';
+		if ( null !== $cursor['completed_at'] ) {
+			/* translators: %s: a date and time */
+			echo esc_html( sprintf( __( 'Last complete synchronization: %s.', 'chatpuff' ), wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), $cursor['completed_at'] ) ) );
+		} else {
+			esc_html_e( 'Not synchronized yet.', 'chatpuff' );
+		}
+		if ( null !== $cursor['kind'] ) {
+			echo ' ' . esc_html__( 'A synchronization is in progress and continues in the background.', 'chatpuff' );
+		}
+		if ( null !== $cursor['error'] ) {
+			/* translators: %s: an error code */
+			echo ' <span class="chatpuff-error">' . esc_html( sprintf( __( 'The last attempt failed (%s); it is retried automatically.', 'chatpuff' ), $cursor['error'] ) ) . '</span>';
+		}
+		echo '</p>';
+		self::form( 'sync_knowledge', __( 'Synchronize now', 'chatpuff' ), 'button' );
 	}
 
 	/**

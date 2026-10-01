@@ -28,6 +28,10 @@ function chatpuff_uninstall_site(): void {
 	}
 	\ChatPuff\WooCommerce\Settings::delete_site_data();
 	wp_clear_scheduled_hook( \ChatPuff\WooCommerce\Storefront::REPORT_HOOK );
+	wp_clear_scheduled_hook( \ChatPuff\WooCommerce\Knowledge::HOOK );
+	delete_option( \ChatPuff\WooCommerce\Knowledge::CURSOR );
+	delete_post_meta_by_key( \ChatPuff\WooCommerce\Knowledge::HASH_META );
+	delete_metadata( 'term', 0, \ChatPuff\WooCommerce\Knowledge::HASH_META, '', true );
 }
 
 if ( is_multisite() ) {

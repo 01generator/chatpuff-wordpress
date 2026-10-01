@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: ChatPuff live chat 0.1.0\n"
+"Project-Id-Version: ChatPuff live chat 0.2.0\n"
 "Report-Msgid-Bugs-To: support@chatpuff.com\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -286,3 +286,53 @@ msgstr "ChatPuff chat en directo"
 #: chatpuff.php
 msgid "Live chat with your customers, answered from your WordPress admin, the ChatPuff dashboard or your phone."
 msgstr "Chat en directo con tus clientes, respondido desde tu escritorio de WordPress, el panel de ChatPuff o tu móvil."
+
+#: class-admin.php
+msgid "Knowledge for the AI assistant"
+msgstr "Conocimiento para el asistente de IA"
+
+#: class-admin.php
+msgid "The plugin sends this shop's published products, product categories and pages to ChatPuff every hour, so the assistant can answer from them. Choose what it may use on the ChatPuff dashboard; nothing about customers is sent."
+msgstr "El plugin envía cada hora a ChatPuff los productos, las categorías de productos y las páginas publicados de esta tienda, para que el asistente pueda responder a partir de ellos. Elija qué puede usar en el panel de ChatPuff; no se envía nada sobre los clientes."
+
+#. translators: %s: a date and time
+#: class-admin.php
+msgid "Last complete synchronization: %s."
+msgstr "Última sincronización completa: %s."
+
+#: class-admin.php
+msgid "Not synchronized yet."
+msgstr "Todavía no se ha sincronizado."
+
+#: class-admin.php
+msgid "A synchronization is in progress and continues in the background."
+msgstr "Hay una sincronización en curso que continúa en segundo plano."
+
+#. translators: %s: an error code
+#: class-admin.php
+msgid "The last attempt failed (%s); it is retried automatically."
+msgstr "El último intento falló (%s); se reintenta automáticamente."
+
+#: class-admin.php
+msgid "Synchronize now"
+msgstr "Sincronizar ahora"
+
+#: class-knowledge.php
+msgid "SKU"
+msgstr "SKU"
+
+#: class-knowledge.php
+msgid "Categories"
+msgstr "Categorías"
+
+#: class-knowledge.php
+msgid "Price"
+msgstr "Precio"
+
+#: class-knowledge.php
+msgid "In stock"
+msgstr "Hay existencias"
+
+#: class-knowledge.php
+msgid "Out of stock"
+msgstr "Agotado"
