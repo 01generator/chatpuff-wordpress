@@ -59,7 +59,7 @@ jobs:
           coverage: none
           tools: composer:v2
       - run: composer install --no-interaction --no-progress
-      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=2G
 
   # The .mo files must match the .po files they are compiled from.
   translations:
