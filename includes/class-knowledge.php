@@ -24,9 +24,10 @@ final class Knowledge {
 	public const CURSOR = 'chatpuff_knowledge_cursor';
 	/** The hash of what was last sent, kept on the product, page or category itself. */
 	public const HASH_META = '_chatpuff_knowledge';
-	/** Seconds a run may take from WP-Cron, and from the settings page's button. */
+	/** Seconds a run may take from WP-Cron, from the settings page's button without JavaScript, and per step of its progress bar. */
 	public const CRON_BUDGET  = 25;
 	public const ADMIN_BUDGET = 40;
+	public const STEP_BUDGET  = 8;
 	/** Seconds until the next run while a pass is in progress; an hour once it is complete. */
 	public const CONTINUE_IN = 300;
 
@@ -192,6 +193,46 @@ final class Knowledge {
 		}
 
 		return $cursor;
+	}
+
+	/**
+	 * How far the pass is, for the settings page's progress bar: the items walked so far (every
+	 * kind before the current one, and the current one up to the last ID sent) out of all the
+	 * items published.
+	 *
+	 * @return array{done: int, total: int}
+	 */
+	public function progress(): array {
+		$cursor  = self::cursor();
+		$done    = 0;
+		$total   = 0;
+		$reached = null === $cursor['kind'];
+		foreach ( self::KINDS as $kind ) {
+			$ids    = $this->published( $kind );
+			$count  = count( $ids );
+			$total += $count;
+			if ( $reached ) {
+				$done += $count;
+			} elseif ( $kind === $cursor['kind'] ) {
+				$last    = $cursor['last_id'];
+				$done   += count(
+					array_filter(
+						$ids,
+						static function ( int $id ) use ( $last ): bool {
+							return $id <= $last;
+						}
+					)
+				);
+				$reached = true;
+			} else {
+				$done += $count;
+			}
+		}
+
+		return array(
+			'done'  => min( $done, $total ),
+			'total' => $total,
+		);
 	}
 
 	/**

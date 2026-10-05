@@ -53,6 +53,28 @@
 	color: #b32d2e;
 }
 
+/* The knowledge synchronization's progress, drawn step after step by admin.js. */
+.chatpuff-progress {
+	height: 10px;
+	margin: 12px 0 6px;
+	max-width: 480px;
+	border-radius: 5px;
+	background: #dcdcde;
+	overflow: hidden;
+}
+
+.chatpuff-progress-fill {
+	height: 100%;
+	width: 0;
+	border-radius: 5px;
+	background: #2b13a6;
+	transition: width 0.3s ease;
+}
+
+[data-chatpuff-sync] [hidden] {
+	display: none !important;
+}
+
 .chatpuff-inline {
 	display: inline-block;
 	margin: 0 8px 0 0;

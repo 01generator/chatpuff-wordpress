@@ -73,6 +73,70 @@
     if (backoffice && window.fetch && window.Promise) {
       initInbox(backoffice);
     }
+
+    var sync = document.querySelector('[data-chatpuff-sync]');
+    if (sync && window.fetch && window.Promise) {
+      initSync(sync);
+    }
+  }
+
+  /**
+   * Synchronize now: step after step through the plugin's ajax action, a few seconds each, with
+   * the progress drawn until the pass is complete. Without JavaScript the form posts one run.
+   */
+  function initSync(box) {
+    var form = box.querySelector('form');
+    var button = form ? form.querySelector('button') : null;
+    var bar = box.querySelector('[data-chatpuff-sync-bar]');
+    var fill = bar ? bar.querySelector('.chatpuff-progress-fill') : null;
+    var label = box.querySelector('[data-chatpuff-sync-label]');
+    if (!form || !button || !bar || !fill || !label) {
+      return;
+    }
+    var text = function (name, values) {
+      var template = box.getAttribute('data-label-' + name) || '';
+      Object.keys(values).forEach(function (key) {
+        template = template.split('{' + key + '}').join(String(values[key]));
+      });
+      return template;
+    };
+    var finish = function (message) {
+      label.textContent = message;
+      button.disabled = false;
+    };
+    var step = function () {
+      fetch(box.getAttribute('data-chatpuff-sync'), { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' } })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          var done = parseInt(data.done, 10) || 0;
+          var total = parseInt(data.total, 10) || 0;
+          var percent = total > 0 ? Math.min(100, Math.round(100 * done / total)) : 100;
+          fill.style.width = percent + '%';
+          bar.setAttribute('aria-valuenow', String(percent));
+          if (data.state === 'running') {
+            label.textContent = text('progress', { done: done, total: total, percent: percent });
+            step();
+          } else if (data.state === 'complete') {
+            fill.style.width = '100%';
+            bar.setAttribute('aria-valuenow', '100');
+            finish(text('complete', { sent: data.sent || 0 }));
+          } else {
+            finish(data.state === 'failed' ? text('error', { code: data.error || '?' }) : (data.error || text('error', { code: data.state || '?' })));
+          }
+        })
+        .catch(function () {
+          finish(text('error', { code: 'network' }));
+        });
+    };
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      button.disabled = true;
+      bar.hidden = false;
+      label.hidden = false;
+      fill.style.width = '0%';
+      label.textContent = text('progress', { done: 0, total: '…', percent: 0 });
+      step();
+    });
   }
 
   /**

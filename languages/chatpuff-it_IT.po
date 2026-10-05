@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: ChatPuff live chat 0.2.0\n"
+"Project-Id-Version: ChatPuff live chat 0.3.0\n"
 "Report-Msgid-Bugs-To: support@chatpuff.com\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -336,3 +336,15 @@ msgstr "Disponibile"
 #: class-knowledge.php
 msgid "Out of stock"
 msgstr "Esaurito"
+
+#: class-admin.php
+msgid "Checked {done} of {total} items ({percent} %)…"
+msgstr "Controllati {done} di {total} elementi ({percent} %)…"
+
+#: class-admin.php
+msgid "Synchronization complete: {sent} items sent to ChatPuff."
+msgstr "Sincronizzazione completata: {sent} elementi inviati a ChatPuff."
+
+#: class-admin.php
+msgid "The synchronization stopped with the error {code}. It is retried automatically."
+msgstr "La sincronizzazione si è fermata con l'errore {code}. Viene ripetuta automaticamente."

@@ -44,6 +44,7 @@ final class Admin {
 		add_action( 'wp_ajax_chatpuff_pairing_status', array( self::class, 'ajax_pairing_status' ) );
 		add_action( 'wp_ajax_chatpuff_staff_token', array( self::class, 'ajax_staff_token' ) );
 		add_action( 'wp_ajax_chatpuff_employee_link', array( self::class, 'ajax_employee_link' ) );
+		add_action( 'wp_ajax_chatpuff_sync_knowledge', array( self::class, 'ajax_sync_knowledge' ) );
 	}
 
 	/**
@@ -147,8 +148,35 @@ final class Admin {
 	}
 
 	/**
+	 * One step of the knowledge synchronization for assets/admin.js, which calls it until the pass
+	 * is complete and draws the progress; each step runs for a few seconds.
+	 */
+	public static function ajax_sync_knowledge(): void {
+		self::json(
+			self::SETTINGS_CAPABILITY,
+			self::SETTINGS_NONCE,
+			static function (): array {
+				if ( function_exists( 'set_time_limit' ) ) {
+					set_time_limit( Knowledge::STEP_BUDGET + 20 );
+				}
+				$knowledge = new Knowledge( new Api_Client() );
+				$cursor    = $knowledge->pass( Knowledge::STEP_BUDGET );
+				$progress  = $knowledge->progress();
+
+				return array(
+					'state' => null !== $cursor['error'] ? 'failed' : ( null === $cursor['kind'] ? 'complete' : 'running' ),
+					'error' => (string) $cursor['error'],
+					'done'  => (string) $progress['done'],
+					'total' => (string) $progress['total'],
+					'sent'  => (string) $cursor['sent'],
+				);
+			}
+		);
+	}
+
+	/**
 	 * A run of the knowledge synchronization now, with a larger budget than WP-Cron gives it
-	 * (api-contract.md §7.6); the page then shows where the pass stands.
+	 * (api-contract.md §7.6): the form without JavaScript; the page then shows where the pass stands.
 	 */
 	public static function post_sync_knowledge(): void {
 		self::settings_action(
@@ -421,7 +449,14 @@ final class Admin {
 			echo ' <span class="chatpuff-error">' . esc_html( sprintf( __( 'The last attempt failed (%s); it is retried automatically.', 'chatpuff' ), $cursor['error'] ) ) . '</span>';
 		}
 		echo '</p>';
+		echo '<div data-chatpuff-sync="' . esc_url( self::ajax_url( 'chatpuff_sync_knowledge', wp_create_nonce( self::SETTINGS_NONCE ) ) ) . '"'
+			. ' data-label-progress="' . esc_attr__( 'Checked {done} of {total} items ({percent} %)…', 'chatpuff' ) . '"'
+			. ' data-label-complete="' . esc_attr__( 'Synchronization complete: {sent} items sent to ChatPuff.', 'chatpuff' ) . '"'
+			. ' data-label-error="' . esc_attr__( 'The synchronization stopped with the error {code}. It is retried automatically.', 'chatpuff' ) . '">';
 		self::form( 'sync_knowledge', __( 'Synchronize now', 'chatpuff' ), 'button' );
+		echo '<div class="chatpuff-progress" data-chatpuff-sync-bar role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><div class="chatpuff-progress-fill"></div></div>';
+		echo '<p class="chatpuff-muted" data-chatpuff-sync-label aria-live="polite" hidden></p>';
+		echo '</div>';
 	}
 
 	/**

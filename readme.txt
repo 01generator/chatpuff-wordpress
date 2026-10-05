@@ -4,7 +4,7 @@ Tags: live chat, chat, customer support, woocommerce, help desk
 Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -74,6 +74,9 @@ Yes. The plugin reads no orders and works with both.
 Deactivating hides the chat and keeps the connection, so reactivating needs no new connection. Deleting the plugin disconnects the shop from ChatPuff; its chat history stays in ChatPuff.
 
 == Changelog ==
+
+= 0.3.0 =
+* Synchronize now runs the knowledge synchronization step by step with a progress bar until it is complete, instead of one run per click.
 
 = 0.2.0 =
 * The plugin sends the shop's published products, product categories and pages to ChatPuff for the AI assistant's knowledge, a little at a time within each hour; the settings page shows where the synchronization stands and has a Synchronize now button.
