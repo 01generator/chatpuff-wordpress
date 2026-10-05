@@ -95,11 +95,30 @@ final class Admin {
 	 * @param string $hook_suffix the admin page.
 	 */
 	public static function assets( $hook_suffix ): void {
+		self::badge();
 		if ( false === strpos( (string) $hook_suffix, self::INBOX_PAGE ) ) {
 			return;
 		}
 		wp_enqueue_style( 'chatpuff-admin', plugins_url( 'assets/admin.css', CHATPUFF_FILE ), array(), CHATPUFF_VERSION );
 		wp_enqueue_script( 'chatpuff-admin', plugins_url( 'assets/admin.js', CHATPUFF_FILE ), array(), CHATPUFF_VERSION, true );
+	}
+
+	/**
+	 * On every admin page of a user who may open the inbox, while the site is connected: the badge
+	 * next to ChatPuff and Inbox in the menu with what waits in ChatPuff (api-contract.md §9), kept
+	 * fresh every minute, and a chime when a chat starts waiting. The script asks for a staff token
+	 * the way the inbox does; a user whose account is not linked is left alone for an hour.
+	 */
+	private static function badge(): void {
+		if ( ! current_user_can( self::INBOX_CAPABILITY ) || null === Settings::connection() || Pairing::is_copy() ) {
+			return;
+		}
+		wp_enqueue_script( 'chatpuff-badge', plugins_url( 'assets/badge.js', CHATPUFF_FILE ), array(), CHATPUFF_VERSION, true );
+		$setup = array(
+			'token_url' => self::ajax_url( 'chatpuff_staff_token', wp_create_nonce( self::INBOX_NONCE ) ),
+			'api'       => ( new Api_Client() )->base_url(),
+		);
+		wp_add_inline_script( 'chatpuff-badge', 'window.chatpuffBadge = ' . (string) wp_json_encode( $setup ) . ';', 'before' );
 	}
 
 	/**

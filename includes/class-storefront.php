@@ -63,6 +63,10 @@ final class Storefront {
 		if ( null !== $token ) {
 			$attributes['data-customer-token'] = $token;
 		}
+		$product = self::product();
+		if ( null !== $product ) {
+			$attributes['data-page'] = (string) wp_json_encode( array( 'product' => $product ) );
+		}
 
 		// The enqueued script's own tag, rebuilt with its attributes (script_loader_tag).
 		// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript
@@ -73,6 +77,33 @@ final class Storefront {
 
 		// Output built from escaped values only.
 		return $html . '></script>' . "\n";
+	}
+
+	/**
+	 * On a product page, the product it shows (its ID, name and address), so that the team and the
+	 * assistant know which one the customer is asking about (api-contract.md §8). The chat sends it
+	 * with the customer's messages.
+	 *
+	 * @return array{id: string, name: string, url: string}|null
+	 */
+	private static function product(): ?array {
+		if ( ! function_exists( 'is_product' ) || ! is_product() ) {
+			return null;
+		}
+		$product = wc_get_product( get_queried_object_id() );
+		if ( ! $product instanceof \WC_Product ) {
+			return null;
+		}
+		$name = trim( wp_strip_all_tags( $product->get_name() ) );
+		if ( '' === $name ) {
+			return null;
+		}
+
+		return array(
+			'id'   => (string) $product->get_id(),
+			'name' => $name,
+			'url'  => (string) get_permalink( $product->get_id() ),
+		);
 	}
 
 	/**

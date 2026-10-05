@@ -25,9 +25,13 @@ The plugin enqueues ChatPuff's `loader.js` in the footer of every storefront pag
 
 For a logged-in user, the tag carries a customer token (a JWT signed with the site's connection key, valid for 10 minutes) with the user ID, name and email, so the chat skips its form. Page caches do not keep pages of logged-in users.
 
+On a product page, the tag names the product (its ID, name and address, `data-page`), and the chat sends it to ChatPuff with the customer's messages, so the team and the AI assistant know which product "is this one in stock?" is about. On other pages the chat sends the page's address and title.
+
 ## The inbox in the WordPress admin
 
 **ChatPuff > Inbox** shows the same inbox as the ChatPuff dashboard. Users who can manage WooCommerce (shop managers, administrators), or who have the `chatpuff_inbox` capability, can open it. Each person links their WordPress account to their ChatPuff account once, in a ChatPuff window; after that, the plugin asks ChatPuff for 15-minute staff tokens that reach only the shops of this WordPress.
+
+A badge next to **ChatPuff** and **Inbox** in the admin menu shows, on every admin page, how many chats wait for the user in ChatPuff: the chats waiting for someone to take them, and the user's own chats with an unread message from the customer. It is refreshed every minute, and a chime plays when a chat starts waiting (the inbox's **Sound alerts** switch turns it off). The badge appears for users who may open the inbox and have linked their ChatPuff account; a user who has not is left alone for an hour before the plugin asks ChatPuff again.
 
 ## Reports
 
