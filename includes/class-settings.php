@@ -174,7 +174,7 @@ final class Settings {
 	 * Removes everything this site stored.
 	 */
 	public static function delete_site_data(): void {
-		foreach ( array( self::CONNECTION, self::PAIRING, self::REPORTED ) as $key ) {
+		foreach ( array( self::CONNECTION, self::PAIRING, self::REPORTED, Order_Callback::NONCES ) as $key ) {
 			delete_option( $key );
 		}
 	}

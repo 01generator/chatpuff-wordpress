@@ -10,9 +10,12 @@ namespace ChatPuff\WooCommerce;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * ChatPuff's servers call this address to check the site's domain while it is being connected
- * (api-contract.md §6.3). It is a REST route, so page caches and maintenance-mode pages normally
- * leave it alone. It answers only while a pairing waits, and reveals nothing without the challenge.
+ * ChatPuff's servers call this address. It is a REST route, so page caches and maintenance-mode
+ * pages normally leave it alone.
+ *
+ * - `action=verify` checks the site's domain while it is being connected (api-contract.md §6.3). It
+ *   answers only while a pairing waits, and reveals nothing without the challenge.
+ * - `action=order`, signed by ChatPuff, asks about an order a customer wants to verify (§7.7).
  */
 final class Rest_Callback {
 
@@ -41,6 +44,9 @@ final class Rest_Callback {
 	 * @param \WP_REST_Request $request the request.
 	 */
 	public static function handle( \WP_REST_Request $request ): \WP_REST_Response {
+		if ( 'order' === $request->get_param( 'action' ) ) {
+			return self::order( $request );
+		}
 		if ( 'verify' !== $request->get_param( 'action' ) ) {
 			return self::respond( array( 'code' => 'not_found' ), 404 );
 		}
@@ -62,6 +68,40 @@ final class Rest_Callback {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Answers ChatPuff's signed question about an order (api-contract.md §7.7).
+	 *
+	 * @param \WP_REST_Request $request the request.
+	 */
+	private static function order( \WP_REST_Request $request ): \WP_REST_Response {
+		$callback = new Order_Callback( new Api_Client() );
+		$headers  = array();
+		foreach ( array( 'Chatpuff-Key-Id', 'Chatpuff-Timestamp', 'Chatpuff-Nonce', 'Chatpuff-Signature' ) as $name ) {
+			$headers[ $name ] = (string) $request->get_header( $name );
+		}
+		// The signature covers the request target exactly as ChatPuff sent it, so it is read as sent.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$target       = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$on_this_site = (string) $request->get_param( 'shop_context' ) === Pairing::shop_context();
+		if ( ! $on_this_site || ! $callback->is_signed_by_chatpuff( $headers, $request->get_method(), $target ) ) {
+			return self::respond( array( 'code' => 'invalid_signature' ), 401 );
+		}
+		$reference = (string) $request->get_param( 'reference' );
+		if ( 1 !== preg_match( '/^[A-Z0-9_-]{1,40}$/', $reference ) ) {
+			return self::respond( array( 'code' => 'invalid_reference' ), 400 );
+		}
+
+		$order = $callback->find_order( $reference );
+		if ( null === $order ) {
+			return self::respond( array( 'code' => 'order_not_found' ), 404 );
+		}
+		$response = new \WP_REST_Response( array( 'order' => $order ), 200 );
+		$response->header( 'Cache-Control', 'no-store' );
+		$response->header( 'X-Robots-Tag', 'noindex' );
+
+		return $response;
 	}
 
 	/**

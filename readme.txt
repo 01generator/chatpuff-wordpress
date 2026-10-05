@@ -4,7 +4,7 @@ Tags: live chat, chat, customer support, woocommerce, help desk
 Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.4.0
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,13 +67,16 @@ No. The chat's script is small and loads asynchronously; the full chat loads onl
 
 = Does it work with High-Performance Order Storage and the block checkout? =
 
-Yes. The plugin reads no orders and works with both.
+Yes. The plugin reads an order only when ChatPuff asks about one that a customer wants to verify in the chat, through WooCommerce's own order functions, which work with both.
 
 = What happens when I deactivate or delete the plugin? =
 
 Deactivating hides the chat and keeps the connection, so reactivating needs no new connection. Deleting the plugin disconnects the shop from ChatPuff; its chat history stays in ChatPuff.
 
 == Changelog ==
+
+= 0.5.0 =
+* Customers can verify an order in the chat before the team talks about it: ChatPuff asks the plugin about the order with a signed call, then emails a code to the address on the order. The plugin answers only ChatPuff, and only with the order's number, customer and email address.
 
 = 0.4.0 =
 * A badge next to ChatPuff and Inbox in the admin menu shows how many chats wait for you in ChatPuff, on every admin page, with a chime when a chat starts waiting.

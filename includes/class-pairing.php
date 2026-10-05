@@ -281,7 +281,11 @@ final class Pairing {
 			'php_version'          => self::version_token( PHP_VERSION ),
 			'integration_version'  => CHATPUFF_VERSION,
 			'api_contract_version' => Api_Client::API_CONTRACT_VERSION,
-			'capabilities'         => array( 'customer_identity', 'back_office_inbox', 'knowledge_sync' ),
+			'capabilities'         => array_merge(
+				array( 'customer_identity', 'back_office_inbox', 'knowledge_sync' ),
+				// Orders can be checked only while WooCommerce runs.
+				Order_Callback::available() ? array( Order_Callback::CAPABILITY ) : array()
+			),
 		);
 	}
 

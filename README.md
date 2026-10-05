@@ -33,6 +33,10 @@ On a product page, the tag names the product (its ID, name and address, `data-pa
 
 A badge next to **ChatPuff** and **Inbox** in the admin menu shows, on every admin page, how many chats wait for the user in ChatPuff: the chats waiting for someone to take them, and the user's own chats with an unread message from the customer. It is refreshed every minute, and a chime plays when a chat starts waiting (the inbox's **Sound alerts** switch turns it off). The badge appears for users who may open the inbox and have linked their ChatPuff account; a user who has not is left alone for an hour before the plugin asks ChatPuff again.
 
+## Verifying orders in the chat
+
+From 0.5.0 a customer can prove in the chat that an order is theirs before the team talks about it: they type the order number, and ChatPuff emails a code to the billing address on the order; a logged-in customer's own order is verified at once. To do that, ChatPuff asks the plugin about the order on its REST route (`?action=order`), and the plugin answers only when the call is signed with ChatPuff's own key, was made within the last five minutes, and was never seen before. The answer names the order, its customer and the email address on it, nothing else. Shops whose order numbers are not their order IDs (a sequential numbering plugin, for example) map them with the `chatpuff_order_id_from_reference` filter.
+
 ## Reports
 
 Once an hour (WP-Cron), and when the settings page opens after an update, the plugin reports its version and the WooCommerce and PHP versions to ChatPuff. The report doubles as the connection's heartbeat.

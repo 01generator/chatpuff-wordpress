@@ -52,6 +52,23 @@ final class Crypto {
 	}
 
 	/**
+	 * Whether the base64 signature is the Ed25519 signature of the message by the base64 public key.
+	 *
+	 * @param string $public_key base64 public key.
+	 * @param string $message    what was signed.
+	 * @param string $signature  base64 signature.
+	 */
+	public static function verify( string $public_key, string $message, string $signature ): bool {
+		$key   = base64_decode( $public_key, true );
+		$bytes = base64_decode( $signature, true );
+		if ( false === $key || false === $bytes || SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES !== strlen( $key ) || SODIUM_CRYPTO_SIGN_BYTES !== strlen( $bytes ) ) {
+			return false;
+		}
+
+		return sodium_crypto_sign_verify_detached( $bytes, $message, $key );
+	}
+
+	/**
 	 * Private keys are stored encrypted with a key derived from this site's security keys, which
 	 * live in wp-config.php, not in the database. A database dump alone therefore does not reveal
 	 * them.
