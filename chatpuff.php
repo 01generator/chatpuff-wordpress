@@ -3,7 +3,7 @@
  * Plugin Name:          ChatPuff live chat
  * Plugin URI:           https://chatpuff.com
  * Description:          Live chat with your customers, answered from your WordPress admin, the ChatPuff dashboard or your phone.
- * Version:              0.6.0
+ * Version:              0.7.0
  * Requires at least:    5.3
  * Requires PHP:         7.4
  * Requires Plugins:     woocommerce
@@ -33,7 +33,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'CHATPUFF_VERSION', '0.6.0' );
+define( 'CHATPUFF_VERSION', '0.7.0' );
 define( 'CHATPUFF_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/load.php';

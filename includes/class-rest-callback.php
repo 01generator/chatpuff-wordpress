@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
  *   answers only while a pairing waits, and reveals nothing without the challenge.
  * - `action=order`, signed by ChatPuff, asks about an order a customer wants to verify (§7.7).
  * - `action=order_details`, signed the same way, asks what may be told about a verified order.
+ * - `action=customer_orders`, signed the same way, lists a signed-in customer's latest orders.
  */
 final class Rest_Callback {
 
@@ -50,6 +51,9 @@ final class Rest_Callback {
 		}
 		if ( 'order_details' === $request->get_param( 'action' ) ) {
 			return self::order_details( $request );
+		}
+		if ( 'customer_orders' === $request->get_param( 'action' ) ) {
+			return self::customer_orders( $request );
 		}
 		if ( 'verify' !== $request->get_param( 'action' ) ) {
 			return self::respond( array( 'code' => 'not_found' ), 404 );
@@ -115,6 +119,23 @@ final class Rest_Callback {
 			return self::respond( array( 'code' => 'order_not_found' ), 404 );
 		}
 		$response = new \WP_REST_Response( array( 'order' => $order ), 200 );
+		$response->header( 'Cache-Control', 'no-store' );
+		$response->header( 'X-Robots-Tag', 'noindex' );
+
+		return $response;
+	}
+
+	/**
+	 * Answers ChatPuff's signed question about a signed-in customer's latest orders (§7.7).
+	 *
+	 * @param \WP_REST_Request $request the request.
+	 */
+	private static function customer_orders( \WP_REST_Request $request ): \WP_REST_Response {
+		$callback = new Order_Callback( new Api_Client() );
+		if ( ! self::signed_by_chatpuff( $request, $callback ) ) {
+			return self::respond( array( 'code' => 'invalid_signature' ), 401 );
+		}
+		$response = new \WP_REST_Response( array( 'orders' => $callback->customer_orders( (string) $request->get_param( 'customer_id' ) ) ), 200 );
 		$response->header( 'Cache-Control', 'no-store' );
 		$response->header( 'X-Robots-Tag', 'noindex' );
 

@@ -20,6 +20,7 @@ final class Order_Callback {
 
 	public const CAPABILITY         = 'order_verification';
 	public const DETAILS_CAPABILITY = 'order_details';
+	public const LIST_CAPABILITY    = 'customer_orders';
 	public const SCHEME             = 'CHATPUFF-SAAS-ED25519-V1';
 	public const NONCES             = 'chatpuff_saas_nonces';
 	public const STATUSES           = array( 'pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded' );
@@ -28,6 +29,7 @@ final class Order_Callback {
 	private const NONCE_LIMIT       = 500;
 	private const MAX_ITEMS         = 50;
 	private const MAX_SHIPMENTS     = 10;
+	private const MAX_RECENT        = 5;
 	// A stand-in order ID, replaced by {id} in the admin's order address.
 	private const SAMPLE_ORDER_ID = 987654321;
 	// WooCommerce's own statuses as ChatPuff names them; WooCommerce does not record delivery, so a
@@ -146,6 +148,55 @@ final class Order_Callback {
 		if ( ! $order instanceof \WC_Order || null === $created || in_array( $order->get_status(), array( 'trash', 'checkout-draft', 'auto-draft' ), true ) ) {
 			return null;
 		}
+		return self::summary( $order, $created ) + array(
+			'items'    => self::items( $order ),
+			'tracking' => self::tracking( $order ),
+		);
+	}
+
+	/**
+	 * A signed-in customer's latest orders on this site, newest first, so that they can pick one in
+	 * the chat (api-contract.md §7.7, customer_orders). Guest orders have no customer and never show.
+	 *
+	 * @param string $customer_id the WordPress user ID the customer token named.
+	 *
+	 * @return list<array<string, string>>
+	 */
+	public function customer_orders( string $customer_id ): array {
+		if ( ! self::available() || 1 !== preg_match( '/^[1-9]\d{0,9}$/', $customer_id ) ) {
+			return array();
+		}
+		$statuses = array_diff( array_keys( wc_get_order_statuses() ), array( 'wc-checkout-draft' ) );
+		$found    = wc_get_orders(
+			array(
+				'customer_id' => (int) $customer_id,
+				'type'        => 'shop_order',
+				'status'      => $statuses,
+				'limit'       => self::MAX_RECENT,
+				'orderby'     => 'date',
+				'order'       => 'DESC',
+			)
+		);
+		$orders   = array();
+		foreach ( is_array( $found ) ? $found : array() as $order ) {
+			$created = $order->get_date_created();
+			if ( null !== $created ) {
+				$orders[] = self::summary( $order, $created );
+			}
+		}
+
+		return $orders;
+	}
+
+	/**
+	 * The order's ID, number, date and status, with WooCommerce's own name for the status.
+	 *
+	 * @param \WC_Order    $order   the order.
+	 * @param \WC_DateTime $created the date it was placed.
+	 *
+	 * @return array<string, string>
+	 */
+	private static function summary( \WC_Order $order, \WC_DateTime $created ): array {
 		$status = self::status( $order );
 		$label  = trim( wp_strip_all_tags( wc_get_order_status_name( $order->get_status() ) ) );
 
@@ -155,8 +206,6 @@ final class Order_Callback {
 			'placed_at'    => $created->format( DATE_ATOM ),
 			'status'       => $status,
 			'status_label' => '' !== $label ? mb_substr( $label, 0, 100 ) : ucfirst( $status ),
-			'items'        => self::items( $order ),
-			'tracking'     => self::tracking( $order ),
 		);
 	}
 

@@ -39,6 +39,8 @@ From 0.5.0 a customer can prove in the chat that an order is theirs before the t
 
 From 0.6.0, while the verification lasts (an hour), the customer who verified an order sees its card in the chat: when it was placed, its status (`completed` counts as shipped, since WooCommerce does not record delivery), the products and quantities, and the tracking number and link where WooCommerce Shipment Tracking (or a plugin keeping its data) records them. ChatPuff asks the plugin for it each time with the same signed call (`?action=order_details`); no prices, addresses or payment details are sent, and ChatPuff keeps no copy. Shops with their own order statuses or another tracking plugin use the `chatpuff_order_status` and `chatpuff_order_tracking` filters. In the admin inbox a verified order has an **Open in the back office** link to the order's page, where WordPress applies the user's own permissions; ChatPuff itself shows the team no order details.
 
+From 0.7.0 a customer who is signed in sees their latest orders (at most five, with their date and status) in the chat's order form and picks one instead of typing its number; it is verified at once as their own. ChatPuff asks the plugin for the list with the same signed call (`?action=customer_orders`), only for the WordPress user the chat's customer token names; guest orders never show.
+
 ## Reports
 
 Once an hour (WP-Cron), and when the settings page opens after an update, the plugin reports its version and the WooCommerce and PHP versions to ChatPuff. The report doubles as the connection's heartbeat.

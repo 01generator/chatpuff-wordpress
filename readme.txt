@@ -4,7 +4,7 @@ Tags: live chat, chat, customer support, woocommerce, help desk
 Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.6.0
+Stable tag: 0.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,7 +31,7 @@ This plugin connects your shop to **ChatPuff** (https://chatpuff.com), a hosted 
 * **When an administrator connects the shop:** the site's address and name, its language and time zone, the address ChatPuff calls to check the site (a REST API route of this plugin), a public key created on your server (the private key never leaves it), and the versions of WordPress, WooCommerce, PHP and the plugin.
 * **Every hour while connected:** the same versions again, as a heartbeat; and, for the AI assistant's knowledge, the published products (name, SKU, categories, price, availability and descriptions), product categories (name, description) and pages (title, content) that changed since the last hour, with their addresses. Nothing about customers or orders.
 * **On storefront pages:** visitors' browsers load the chat's script from api.chatpuff.com. What a visitor types in the chat (their name, email address and messages) goes to ChatPuff. For a logged-in customer, the page carries a short-lived token, signed by your server, with the customer's user ID, name and email address, so the chat knows who they are.
-* **When a customer verifies an order in the chat:** ChatPuff asks the plugin about it with a call signed by ChatPuff's own key, and the plugin answers with the order's number, customer ID and billing email address. While the verification lasts (an hour), ChatPuff may ask again for the order's date, status, products and quantities, and tracking numbers and links, which the customer sees in the chat. No prices, addresses or payment details are sent, and ChatPuff keeps no copy of the details.
+* **When a customer verifies an order in the chat:** ChatPuff asks the plugin about it with a call signed by ChatPuff's own key, and the plugin answers with the order's number, customer ID and billing email address. While the verification lasts (an hour), ChatPuff may ask again for the order's date, status, products and quantities, and tracking numbers and links, which the customer sees in the chat. For a customer signed in to the shop, ChatPuff may list their latest orders (number, date and status) so that they can pick one. No prices, addresses or payment details are sent, and ChatPuff keeps no copy of the details.
 * **In the WordPress admin:** the inbox's script is loaded from api.chatpuff.com. The plugin asks ChatPuff for 15-minute access tokens for the signed-in user; the first time, it sends their user ID and first name with an initial so they can link their ChatPuff account.
 
 ChatPuff's [terms of service](https://chatpuff.com/terms) and [privacy notice](https://chatpuff.com/privacy) apply. As the shop owner you are the controller of your customers' data; ChatPuff processes it on your behalf under its [data processing agreement](https://chatpuff.com/dpa). Mention the chat in your own privacy policy.
@@ -75,6 +75,9 @@ Yes. The plugin reads an order only when ChatPuff asks about one that a customer
 Deactivating hides the chat and keeps the connection, so reactivating needs no new connection. Deleting the plugin disconnects the shop from ChatPuff; its chat history stays in ChatPuff.
 
 == Changelog ==
+
+= 0.7.0 =
+* A customer who is signed in sees their latest orders (at most five, with their date and status) in the chat's order form and picks one instead of typing its number; it is verified at once as their own. ChatPuff asks the plugin for the list with a signed call, only for that customer.
 
 = 0.6.0 =
 * While a verification lasts (an hour), the customer who verified an order sees its card in the chat: when it was placed, its status, the products and quantities, and the tracking number and link where WooCommerce Shipment Tracking records them. ChatPuff asks the plugin for it each time with a signed call; no prices, addresses or payment details are sent.
