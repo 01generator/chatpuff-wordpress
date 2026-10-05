@@ -220,6 +220,7 @@
         window.ChatPuffInbox.mount(host.querySelector('[data-chatpuff-when="ready"]'), {
           api: api,
           locale: host.getAttribute('data-locale'),
+          orderUrl: host.getAttribute('data-order-url') || null,
           shopId: current ? current.shopId : null,
           auth: { mode: 'bearer', token: token }
         });

@@ -10,19 +10,39 @@ namespace ChatPuff\WooCommerce;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * ChatPuff asks about an order so that a customer can prove it is theirs (api-contract.md §7.7).
- * Only ChatPuff may ask: the call is signed with ChatPuff's own key, which the plugin received when
- * the site connected, within five minutes, and never twice. The answer names the order, its
- * customer and the email address on it, nothing more.
+ * ChatPuff asks about an order so that a customer can prove it is theirs, and then for what may be
+ * told about it (api-contract.md §7.7). Only ChatPuff may ask: the call is signed with ChatPuff's
+ * own key, which the plugin received when the site connected, within five minutes, and never twice.
+ * The check names the order, its customer and the email address on it; the details its status,
+ * items and tracking, nothing more.
  */
 final class Order_Callback {
 
-	public const CAPABILITY      = 'order_verification';
-	public const SCHEME          = 'CHATPUFF-SAAS-ED25519-V1';
-	public const NONCES          = 'chatpuff_saas_nonces';
-	private const CLOCK_WINDOW   = 300;
-	private const NONCE_LIFETIME = 600;
-	private const NONCE_LIMIT    = 500;
+	public const CAPABILITY         = 'order_verification';
+	public const DETAILS_CAPABILITY = 'order_details';
+	public const SCHEME             = 'CHATPUFF-SAAS-ED25519-V1';
+	public const NONCES             = 'chatpuff_saas_nonces';
+	public const STATUSES           = array( 'pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded' );
+	private const CLOCK_WINDOW      = 300;
+	private const NONCE_LIFETIME    = 600;
+	private const NONCE_LIMIT       = 500;
+	private const MAX_ITEMS         = 50;
+	private const MAX_SHIPMENTS     = 10;
+	// A stand-in order ID, replaced by {id} in the admin's order address.
+	private const SAMPLE_ORDER_ID = 987654321;
+	// WooCommerce's own statuses as ChatPuff names them; WooCommerce does not record delivery, so a
+	// completed (fulfilled) order counts as shipped. Shipping plugins' own statuses are mapped too.
+	private const STATUS_MAP = array(
+		'pending'    => 'pending',
+		'on-hold'    => 'pending',
+		'failed'     => 'pending',
+		'processing' => 'processing',
+		'completed'  => 'shipped',
+		'shipped'    => 'shipped',
+		'delivered'  => 'delivered',
+		'cancelled'  => 'cancelled',
+		'refunded'   => 'refunded',
+	);
 
 	/**
 	 * The ChatPuff API client, to fetch ChatPuff's current keys.
@@ -107,6 +127,176 @@ final class Order_Callback {
 			'email'       => (string) $email,
 			'language'    => 1 === preg_match( '/^[a-z]{2}$/', $language ) ? $language : null,
 		);
+	}
+
+	/**
+	 * What may be told about one of this site's orders, by its ID (api-contract.md §7.7: the date
+	 * placed, the status, the items and the tracking; no prices, addresses or payment details).
+	 *
+	 * @param string $order_id the order ID of the verification answer.
+	 *
+	 * @return array<string, mixed>|null
+	 */
+	public function describe_order( string $order_id ): ?array {
+		if ( ! self::available() || 1 !== preg_match( '/^[1-9]\d{0,9}$/', $order_id ) ) {
+			return null;
+		}
+		$order   = wc_get_order( (int) $order_id );
+		$created = $order instanceof \WC_Order ? $order->get_date_created() : null;
+		if ( ! $order instanceof \WC_Order || null === $created || in_array( $order->get_status(), array( 'trash', 'checkout-draft', 'auto-draft' ), true ) ) {
+			return null;
+		}
+		$status = self::status( $order );
+		$label  = trim( wp_strip_all_tags( wc_get_order_status_name( $order->get_status() ) ) );
+
+		return array(
+			'id'           => (string) $order->get_id(),
+			'reference'    => (string) $order->get_order_number(),
+			'placed_at'    => $created->format( DATE_ATOM ),
+			'status'       => $status,
+			'status_label' => '' !== $label ? mb_substr( $label, 0, 100 ) : ucfirst( $status ),
+			'items'        => self::items( $order ),
+			'tracking'     => self::tracking( $order ),
+		);
+	}
+
+	/**
+	 * The address of an order's page in this admin, with {id} for the order ID: the inbox links a
+	 * verified order there, and WordPress checks the user's own permissions.
+	 */
+	public static function admin_order_url(): string {
+		if ( ! self::available() ) {
+			return '';
+		}
+		// High-Performance Order Storage (WooCommerce 6.9 and later) has its own order pages.
+		$hpos = class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) && \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+		$url  = $hpos
+			? admin_url( 'admin.php?page=wc-orders&action=edit&id=' . self::SAMPLE_ORDER_ID )
+			: admin_url( 'post.php?post=' . self::SAMPLE_ORDER_ID . '&action=edit' );
+
+		return str_replace( (string) self::SAMPLE_ORDER_ID, '{id}', $url );
+	}
+
+	/**
+	 * The order's status as ChatPuff names it.
+	 *
+	 * @param \WC_Order $order the order.
+	 */
+	private static function status( \WC_Order $order ): string {
+		$status = $order->get_status();
+		$mapped = self::STATUS_MAP[ $status ] ?? ( $order->is_paid() ? 'processing' : 'pending' );
+		/**
+		 * The status ChatPuff gives the customer for an order: one of pending, processing, shipped,
+		 * delivered, cancelled, refunded. For shops with their own order statuses.
+		 *
+		 * @param string    $mapped the status the plugin chose.
+		 * @param string    $status WooCommerce's status, without "wc-".
+		 * @param \WC_Order $order  the order.
+		 */
+		$filtered = apply_filters( 'chatpuff_order_status', $mapped, $status, $order );
+
+		return in_array( $filtered, self::STATUSES, true ) ? $filtered : $mapped;
+	}
+
+	/**
+	 * Each line's product name as ordered and its quantity.
+	 *
+	 * @param \WC_Order $order the order.
+	 *
+	 * @return list<array{name: string, quantity: int}>
+	 */
+	private static function items( \WC_Order $order ): array {
+		$items = array();
+		foreach ( $order->get_items() as $item ) {
+			$name     = trim( wp_strip_all_tags( (string) $item->get_name() ) );
+			$quantity = (int) $item->get_quantity();
+			if ( '' !== $name && $quantity > 0 ) {
+				$items[] = array(
+					'name'     => mb_substr( $name, 0, 255 ),
+					'quantity' => $quantity,
+				);
+			}
+			if ( count( $items ) >= self::MAX_ITEMS ) {
+				break;
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * The shipments with a tracking number, as WooCommerce Shipment Tracking (or a plugin that
+	 * keeps its data, such as Advanced Shipment Tracking) records them, or as the filter gives them.
+	 *
+	 * @param \WC_Order $order the order.
+	 *
+	 * @return list<array{carrier: string|null, number: string, url: string|null}>
+	 */
+	private static function tracking( \WC_Order $order ): array {
+		$recorded = $order->get_meta( '_wc_shipment_tracking_items' );
+		// The extension formats its known carriers' names and tracking links.
+		if ( is_callable( array( 'WC_Shipment_Tracking_Actions', 'get_instance' ) ) ) {
+			$actions = call_user_func( array( 'WC_Shipment_Tracking_Actions', 'get_instance' ) );
+			if ( is_object( $actions ) && is_callable( array( $actions, 'get_tracking_items' ) ) ) {
+				$formatted = call_user_func( array( $actions, 'get_tracking_items' ), $order->get_id(), true );
+				$recorded  = is_array( $formatted ) ? $formatted : $recorded;
+			}
+		}
+		$shipments = array();
+		foreach ( is_array( $recorded ) ? $recorded : array() as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$shipments[] = array(
+				'carrier' => self::first_text( $item, array( 'formatted_tracking_provider', 'custom_tracking_provider', 'tracking_provider' ) ),
+				'number'  => self::first_text( $item, array( 'tracking_number' ) ),
+				'url'     => self::first_text( $item, array( 'formatted_tracking_link', 'custom_tracking_link' ) ),
+			);
+		}
+		/**
+		 * The order's shipments for ChatPuff, for shops that record tracking another way: a list of
+		 * arrays with carrier, number and url (carrier and url may be null).
+		 *
+		 * @param array<int, array<string, mixed>> $shipments the shipments the plugin found.
+		 * @param \WC_Order                        $order     the order.
+		 */
+		$shipments = apply_filters( 'chatpuff_order_tracking', $shipments, $order );
+
+		$tracking = array();
+		foreach ( $shipments as $shipment ) {
+			$number  = is_string( $shipment['number'] ?? null ) ? trim( $shipment['number'] ) : '';
+			$carrier = is_string( $shipment['carrier'] ?? null ) ? trim( $shipment['carrier'] ) : '';
+			$url     = is_string( $shipment['url'] ?? null ) ? trim( $shipment['url'] ) : '';
+			if ( '' === $number || mb_strlen( $number ) > 100 ) {
+				continue;
+			}
+			$tracking[] = array(
+				'carrier' => '' !== $carrier ? mb_substr( $carrier, 0, 100 ) : null,
+				'number'  => $number,
+				'url'     => 1 === preg_match( '#^https?://\S+$#', $url ) && strlen( $url ) <= 500 ? $url : null,
+			);
+			if ( count( $tracking ) >= self::MAX_SHIPMENTS ) {
+				break;
+			}
+		}
+
+		return $tracking;
+	}
+
+	/**
+	 * The first of these keys that holds text.
+	 *
+	 * @param array<mixed>  $item the recorded item.
+	 * @param array<string> $keys the keys, in order.
+	 */
+	private static function first_text( array $item, array $keys ): ?string {
+		foreach ( $keys as $key ) {
+			if ( is_string( $item[ $key ] ?? null ) && '' !== trim( $item[ $key ] ) ) {
+				return trim( wp_strip_all_tags( $item[ $key ] ) );
+			}
+		}
+
+		return null;
 	}
 
 	/**

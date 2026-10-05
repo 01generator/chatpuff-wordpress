@@ -16,6 +16,7 @@ defined( 'ABSPATH' ) || exit;
  * - `action=verify` checks the site's domain while it is being connected (api-contract.md §6.3). It
  *   answers only while a pairing waits, and reveals nothing without the challenge.
  * - `action=order`, signed by ChatPuff, asks about an order a customer wants to verify (§7.7).
+ * - `action=order_details`, signed the same way, asks what may be told about a verified order.
  */
 final class Rest_Callback {
 
@@ -47,6 +48,9 @@ final class Rest_Callback {
 		if ( 'order' === $request->get_param( 'action' ) ) {
 			return self::order( $request );
 		}
+		if ( 'order_details' === $request->get_param( 'action' ) ) {
+			return self::order_details( $request );
+		}
 		if ( 'verify' !== $request->get_param( 'action' ) ) {
 			return self::respond( array( 'code' => 'not_found' ), 404 );
 		}
@@ -77,15 +81,7 @@ final class Rest_Callback {
 	 */
 	private static function order( \WP_REST_Request $request ): \WP_REST_Response {
 		$callback = new Order_Callback( new Api_Client() );
-		$headers  = array();
-		foreach ( array( 'Chatpuff-Key-Id', 'Chatpuff-Timestamp', 'Chatpuff-Nonce', 'Chatpuff-Signature' ) as $name ) {
-			$headers[ $name ] = (string) $request->get_header( $name );
-		}
-		// The signature covers the request target exactly as ChatPuff sent it, so it is read as sent.
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$target       = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-		$on_this_site = (string) $request->get_param( 'shop_context' ) === Pairing::shop_context();
-		if ( ! $on_this_site || ! $callback->is_signed_by_chatpuff( $headers, $request->get_method(), $target ) ) {
+		if ( ! self::signed_by_chatpuff( $request, $callback ) ) {
 			return self::respond( array( 'code' => 'invalid_signature' ), 401 );
 		}
 		$reference = (string) $request->get_param( 'reference' );
@@ -102,6 +98,46 @@ final class Rest_Callback {
 		$response->header( 'X-Robots-Tag', 'noindex' );
 
 		return $response;
+	}
+
+	/**
+	 * Answers ChatPuff's signed question about what may be told about a verified order (§7.7).
+	 *
+	 * @param \WP_REST_Request $request the request.
+	 */
+	private static function order_details( \WP_REST_Request $request ): \WP_REST_Response {
+		$callback = new Order_Callback( new Api_Client() );
+		if ( ! self::signed_by_chatpuff( $request, $callback ) ) {
+			return self::respond( array( 'code' => 'invalid_signature' ), 401 );
+		}
+		$order = $callback->describe_order( (string) $request->get_param( 'order_id' ) );
+		if ( null === $order ) {
+			return self::respond( array( 'code' => 'order_not_found' ), 404 );
+		}
+		$response = new \WP_REST_Response( array( 'order' => $order ), 200 );
+		$response->header( 'Cache-Control', 'no-store' );
+		$response->header( 'X-Robots-Tag', 'noindex' );
+
+		return $response;
+	}
+
+	/**
+	 * Whether ChatPuff signed this call to this site.
+	 *
+	 * @param \WP_REST_Request $request  the request.
+	 * @param Order_Callback   $callback the order callback.
+	 */
+	private static function signed_by_chatpuff( \WP_REST_Request $request, Order_Callback $callback ): bool {
+		$headers = array();
+		foreach ( array( 'Chatpuff-Key-Id', 'Chatpuff-Timestamp', 'Chatpuff-Nonce', 'Chatpuff-Signature' ) as $name ) {
+			$headers[ $name ] = (string) $request->get_header( $name );
+		}
+		// The signature covers the request target exactly as ChatPuff sent it, so it is read as sent.
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$target       = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$on_this_site = (string) $request->get_param( 'shop_context' ) === Pairing::shop_context();
+
+		return $on_this_site && $callback->is_signed_by_chatpuff( $headers, $request->get_method(), $target );
 	}
 
 	/**

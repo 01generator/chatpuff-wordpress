@@ -295,6 +295,7 @@ final class Admin {
 			data-link-url="<?php echo esc_url( self::ajax_url( 'chatpuff_employee_link', $nonce ) ); ?>"
 			data-api="<?php echo esc_url( ( new Api_Client() )->base_url() ); ?>"
 			data-locale="<?php echo esc_attr( Pairing::language( get_user_locale() ) ); ?>"
+			data-order-url="<?php echo esc_attr( Order_Callback::admin_order_url() ); ?>"
 			data-popup-blocked="<?php esc_attr_e( 'Your browser blocked the ChatPuff window. Allow pop-ups for this site and try again.', 'chatpuff' ); ?>"
 			data-failed="<?php esc_attr_e( 'The ChatPuff inbox could not be loaded. Check your internet connection and reload the page.', 'chatpuff' ); ?>">
 			<p class="chatpuff-muted" data-chatpuff-when="loading"><span class="spinner is-active"></span> <?php esc_html_e( 'Loading the inbox…', 'chatpuff' ); ?></p>

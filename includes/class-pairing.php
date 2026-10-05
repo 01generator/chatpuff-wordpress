@@ -284,7 +284,7 @@ final class Pairing {
 			'capabilities'         => array_merge(
 				array( 'customer_identity', 'back_office_inbox', 'knowledge_sync' ),
 				// Orders can be checked only while WooCommerce runs.
-				Order_Callback::available() ? array( Order_Callback::CAPABILITY ) : array()
+				Order_Callback::available() ? array( Order_Callback::CAPABILITY, Order_Callback::DETAILS_CAPABILITY ) : array()
 			),
 		);
 	}
