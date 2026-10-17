@@ -7,6 +7,35 @@
 (function () {
   'use strict';
 
+  // A request to the plugin's own ajax actions without an answer for this long is given up: a server
+  // that never answers would otherwise hold the inbox for good (each request waits for a token).
+  var REQUEST_TIMEOUT_MS = 30000;
+
+  function request(url) {
+    var options = { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' } };
+    var timer = null;
+    if (window.AbortController) {
+      var controller = new AbortController();
+      options.signal = controller.signal;
+      timer = window.setTimeout(function () { controller.abort(); }, REQUEST_TIMEOUT_MS);
+    }
+    return fetch(url, options).then(function (response) {
+      window.clearTimeout(timer);
+      return response;
+    }, function (error) {
+      window.clearTimeout(timer);
+      throw error;
+    });
+  }
+
+  // The back-office session ended: carried as status 401, which ChatPuff's inbox script shows as
+  // "You were signed out. Reload the page to sign in again." instead of trying again forever.
+  function signedOut() {
+    var error = new Error('signed_out');
+    error.status = 401;
+    return error;
+  }
+
   function init() {
     // Connect: open ChatPuff in a new tab right away. The tab is opened during the click so that
     // pop-up blockers allow it; without JavaScript the form posts and the page shows a link instead.
@@ -163,9 +192,16 @@
       }
     }
 
+    // The plugin's own JSON answer. Anything else (the back office's login page once the session
+    // ended, a refusal) means this page is signed out.
     function post(url) {
-      return fetch(url, { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' } })
-        .then(function (response) { return response.json(); });
+      return request(url).then(function (response) {
+        var type = response.headers.get('Content-Type') || '';
+        if (response.status === 401 || response.status === 403 || response.redirected || type.indexOf('json') === -1) {
+          throw signedOut();
+        }
+        return response.json();
+      });
     }
 
     // The current token, or a new one from the plugin when asked to renew or close to expiry.
@@ -178,6 +214,13 @@
           pending = null;
           if (data.state !== 'ready' || !data.access_token) {
             current = null;
+            // The session ended, or the page's token is stale: reload the page (the inbox says so).
+            if (data.state === 'signed_out') {
+              if (!mounted) {
+                show('error', data.error);
+              }
+              throw signedOut();
+            }
             // The link was replaced or access removed: say so. Other failures leave a running inbox
             // alone; it retries by itself.
             if (data.state === 'not_linked' || data.state === 'no_access') {

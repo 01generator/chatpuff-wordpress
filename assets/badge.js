@@ -74,9 +74,23 @@
       }
     }
 
+    // The token request, given up after 30 seconds: a server that never answers would otherwise
+    // stop the badge on this page for good.
     function post(url) {
-      return fetch(url, { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' } })
-        .then(function (response) { return response.json(); });
+      var options = { method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' } };
+      var timer = null;
+      if (window.AbortController) {
+        var controller = new AbortController();
+        options.signal = controller.signal;
+        timer = window.setTimeout(function () { controller.abort(); }, 30000);
+      }
+      return fetch(url, options).then(function (response) {
+        window.clearTimeout(timer);
+        return response.json();
+      }, function (error) {
+        window.clearTimeout(timer);
+        throw error;
+      });
     }
 
     // The staff token kept for this tab, or a new one from the plugin. A user who is not linked,

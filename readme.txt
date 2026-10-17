@@ -4,7 +4,7 @@ Tags: live chat, chat, customer support, woocommerce, help desk
 Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.7.0
+Stable tag: 0.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -75,6 +75,9 @@ Yes. The plugin reads an order only when ChatPuff asks about one that a customer
 Deactivating hides the chat and keeps the connection, so reactivating needs no new connection. Deleting the plugin disconnects the shop from ChatPuff; its chat history stays in ChatPuff.
 
 == Changelog ==
+
+= 0.7.1 =
+* The inbox says "You were signed out. Reload the page to sign in again." when the WordPress session or the page's nonce has ended, instead of "ChatPuff cannot be reached. Trying again…" forever; a token request the site never answers is given up after 30 seconds, so the inbox and the badge go on.
 
 = 0.7.0 =
 * A customer who is signed in sees their latest orders (at most five, with their date and status) in the chat's order form and picks one instead of typing its number; it is verified at once as their own. ChatPuff asks the plugin for the list with a signed call, only for that customer.

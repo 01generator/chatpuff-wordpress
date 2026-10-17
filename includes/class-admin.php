@@ -615,8 +615,10 @@ final class Admin {
 	 */
 	private static function json( string $capability, string $nonce, \Closure $action ): void {
 		if ( ! current_user_can( $capability ) || false === check_ajax_referer( $nonce, false, false ) ) {
+			// The session ended or the page's nonce expired (they last a day): the page must be
+			// reloaded, and the inbox script says so (state "signed_out").
 			$result = array(
-				'state' => 'error',
+				'state' => 'signed_out',
 				'error' => __( 'Your session expired. Please reload the page and try again.', 'chatpuff' ),
 			);
 		} else {
