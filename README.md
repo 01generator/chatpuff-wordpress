@@ -41,6 +41,12 @@ From 0.6.0, while the verification lasts (an hour), the customer who verified an
 
 From 0.7.0 a customer who is signed in sees their latest orders (at most five, with their date and status) in the chat's order form and picks one instead of typing its number; it is verified at once as their own. ChatPuff asks the plugin for the list with the same signed call (`?action=customer_orders`), only for the WordPress user the chat's customer token names; guest orders never show.
 
+## The AI assistant's knowledge
+
+From 0.2.0 the plugin sends the shop's published products (not hidden from the catalog and search), product categories and pages to ChatPuff, so that the AI assistant can answer customers from them: the product's name, SKU, categories, price, availability and descriptions; the category's name and description; the page's title and content. Nothing about customers or orders is sent. A WP-Cron run once an hour sends what changed (a hash of each item's text is kept in its post or term meta, `_chatpuff_knowledge`), continuing every five minutes while a pass is in progress, and each kind ends with the inventory of what is published, so ChatPuff removes the rest. **ChatPuff > Settings** shows where it stands and has a **Synchronize now** button with a progress bar (from 0.3.0).
+
+From 0.7.2 a product that changes does not wait for that hour: saving it through WooCommerce (the editor, quick and bulk edit, imports, the REST API, scheduled sales), its variations, its stock, and its status or deletion through WordPress note it (option `chatpuff_knowledge_pending`), and a one-off WP-Cron run a minute later (`chatpuff_knowledge_changes`) sends the noted products whose text changed, with the products' inventory when one that ChatPuff has left the shop. More than 100 products at once start the hourly run at once instead, which still sends only what changed.
+
 ## Reports
 
 Once an hour (WP-Cron), and when the settings page opens after an update, the plugin reports its version and the WooCommerce and PHP versions to ChatPuff. The report doubles as the connection's heartbeat.

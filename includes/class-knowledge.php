@@ -14,7 +14,9 @@ defined( 'ABSPATH' ) || exit;
  * assistant's knowledge (api-contract.md §7.6, capability knowledge_sync). A pass walks each kind
  * in order within a time budget and continues at the next run until it is complete; only what
  * changed since it was last sent travels, and each kind ends with the inventory of what is
- * published. Nothing about customers or orders is ever sent.
+ * published. Nothing about customers or orders is ever sent. A product that changes in the shop
+ * does not wait for the next pass (0.7.2): it is noted (watch()) and sent on its own a minute later
+ * (send_changes()), with whatever else changed in that minute.
  *
  * @phpstan-type Source array{kind: string, external_id: string, locale: string, title: string, url: string|null, text: string, hash: string}
  */
@@ -30,6 +32,13 @@ final class Knowledge {
 	public const STEP_BUDGET  = 8;
 	/** Seconds until the next run while a pass is in progress; an hour once it is complete. */
 	public const CONTINUE_IN = 300;
+	/** The products changed since they were last sent, waiting for their run (0.7.2). */
+	public const PENDING = 'chatpuff_knowledge_pending';
+	/** The run that sends them, a minute after the first change, so that a bulk edit travels together. */
+	public const CHANGES_HOOK = 'chatpuff_knowledge_changes';
+	public const CHANGES_IN   = 60;
+	/** More changed products than this at once (an import, a bulk edit) start the whole pass instead. */
+	public const PENDING_MAX = 100;
 
 	private const KINDS = array( 'product', 'category', 'page' );
 	/** Items read per step, and sent per request (the contract allows 100). */
@@ -37,6 +46,13 @@ final class Knowledge {
 	/** Identifiers an inventory may list (the contract's limit); a larger kind keeps what ChatPuff has. */
 	private const MAX_INVENTORY = 100000;
 	private const MAX_TEXT      = 60000;
+
+	/**
+	 * Whether this request's noted products overflowed: the pass takes them.
+	 *
+	 * @var bool
+	 */
+	private static $overflowed = false;
 
 	/**
 	 * The API client.
@@ -85,6 +101,187 @@ final class Knowledge {
 		if ( false === $next || $next > time() + self::CONTINUE_IN ) {
 			wp_schedule_single_event( time() + self::CONTINUE_IN, self::HOOK );
 		}
+	}
+
+	/**
+	 * Notes what changes a product for the assistant: a save through WooCommerce (the editor, quick
+	 * and bulk edit, imports, the REST API, scheduled sales), its variations, its stock, and its
+	 * status or its deletion through WordPress itself.
+	 */
+	public static function watch(): void {
+		add_action( 'woocommerce_new_product', array( self::class, 'product_changed' ) );
+		add_action( 'woocommerce_update_product', array( self::class, 'product_changed' ) );
+		add_action( 'woocommerce_product_set_stock_status', array( self::class, 'product_changed' ) );
+		add_action( 'woocommerce_new_product_variation', array( self::class, 'variation_changed' ) );
+		add_action( 'woocommerce_update_product_variation', array( self::class, 'variation_changed' ) );
+		add_action( 'woocommerce_variation_set_stock_status', array( self::class, 'variation_changed' ) );
+		add_action( 'woocommerce_product_set_stock', array( self::class, 'stock_changed' ) );
+		add_action( 'woocommerce_variation_set_stock', array( self::class, 'stock_changed' ) );
+		add_action( 'transition_post_status', array( self::class, 'status_changed' ), 10, 3 );
+		add_action( 'before_delete_post', array( self::class, 'post_deleted' ) );
+		add_action( self::CHANGES_HOOK, array( self::class, 'send_changes' ) );
+	}
+
+	/**
+	 * A product was created or saved, or its stock status changed.
+	 *
+	 * @param int|string $product_id the product.
+	 */
+	public static function product_changed( $product_id ): void {
+		self::note( (int) $product_id );
+	}
+
+	/**
+	 * A variation was created or saved, or its stock status changed: its product.
+	 *
+	 * @param int|string $variation_id the variation.
+	 */
+	public static function variation_changed( $variation_id ): void {
+		self::note( (int) wp_get_post_parent_id( (int) $variation_id ) );
+	}
+
+	/**
+	 * A stock quantity changed (an order, a refund, the admin): the product, which is sent only
+	 * when its text changed.
+	 *
+	 * @param mixed $product the product or variation.
+	 */
+	public static function stock_changed( $product ): void {
+		if ( $product instanceof \WC_Product ) {
+			self::note( $product->get_parent_id() > 0 ? $product->get_parent_id() : $product->get_id() );
+		}
+	}
+
+	/**
+	 * A product was published, unpublished or trashed, whichever way.
+	 *
+	 * @param string $new_status the status now.
+	 * @param string $old_status the status before.
+	 * @param mixed  $post       the post.
+	 */
+	public static function status_changed( $new_status, $old_status, $post ): void {
+		if ( $new_status !== $old_status && $post instanceof \WP_Post && 'product' === $post->post_type ) {
+			self::note( (int) $post->ID );
+		}
+	}
+
+	/**
+	 * A product or a variation is about to be deleted for good.
+	 *
+	 * @param int|string $post_id the post.
+	 */
+	public static function post_deleted( $post_id ): void {
+		$type = get_post_type( (int) $post_id );
+		if ( 'product' === $type ) {
+			self::note( (int) $post_id );
+		} elseif ( 'product_variation' === $type ) {
+			self::variation_changed( $post_id );
+		}
+	}
+
+	/**
+	 * Notes a changed product and schedules its run, a minute away; nothing leaves the site here,
+	 * so a save stays as fast as ever whatever ChatPuff does. More than PENDING_MAX at once start
+	 * the whole pass now instead, which sends only what changed.
+	 *
+	 * @param int $product_id the product.
+	 */
+	private static function note( int $product_id ): void {
+		if ( $product_id <= 0 || self::$overflowed || null === Settings::widget() || Pairing::is_copy() ) {
+			return;
+		}
+		$pending = self::pending();
+		if ( ! in_array( $product_id, $pending, true ) ) {
+			$pending[] = $product_id;
+			if ( count( $pending ) > self::PENDING_MAX ) {
+				self::$overflowed = true;
+				update_option( self::PENDING, array(), false );
+				$next = wp_next_scheduled( self::HOOK );
+				if ( false === $next || $next > time() + self::CHANGES_IN ) {
+					wp_schedule_single_event( time(), self::HOOK );
+				}
+
+				return;
+			}
+			update_option( self::PENDING, $pending, false );
+		}
+		if ( false === wp_next_scheduled( self::CHANGES_HOOK ) ) {
+			wp_schedule_single_event( time() + self::CHANGES_IN, self::CHANGES_HOOK );
+		}
+	}
+
+	/**
+	 * The products noted.
+	 *
+	 * @return list<int>
+	 */
+	private static function pending(): array {
+		$ids = get_option( self::PENDING, array() );
+
+		return is_array( $ids ) ? array_values( array_filter( array_map( 'intval', $ids ) ) ) : array();
+	}
+
+	/**
+	 * The WP-Cron run a minute after a change: the noted products that changed are sent as
+	 * sources and, when one that ChatPuff has is no longer published (deleted, trashed, hidden),
+	 * the products' inventory, so that it leaves the assistant's knowledge at once. The list is
+	 * cleared first; when ChatPuff fails, nothing is remembered as sent and the next pass sends it.
+	 */
+	public static function send_changes(): void {
+		$ids = self::pending();
+		if ( array() === $ids ) {
+			return;
+		}
+		update_option( self::PENDING, array(), false );
+		if ( null === Settings::connection() || Pairing::is_copy() ) {
+			return;
+		}
+		( new self( new Api_Client() ) )->send_products( $ids );
+	}
+
+	/**
+	 * Sends these products where they changed, and the inventory when one that ChatPuff has left.
+	 *
+	 * @param int[] $ids the products.
+	 */
+	private function send_products( array $ids ): void {
+		global $wpdb;
+		// The noted products that are published, in one query; the result changes with every product.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		$rows      = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product' AND post_status = 'publish' AND ID IN (" . implode( ',', array_fill( 0, count( $ids ), '%d' ) ) . ') ORDER BY ID ASC', $ids ) );
+		$published = array_values( array_diff( array_map( 'intval', $rows ), $this->hidden_product_ids() ) );
+		$gone      = array_values( array_diff( $ids, $published ) );
+		$locale    = Pairing::language( get_locale() );
+		$pairing   = new Pairing( $this->api );
+		try {
+			foreach ( array_chunk( $published, self::PAGE ) as $chunk ) {
+				$changed = $this->changed( 'product', $this->sources( 'product', $chunk, $locale ) );
+				if ( array() !== $changed ) {
+					$this->send_sources( $pairing, 'product', $changed );
+				}
+			}
+			if ( $this->known( $gone ) ) {
+				$this->send_inventory( $pairing, 'product', $locale );
+			}
+		} catch ( Api_Exception $exception ) {
+			// The next pass sends them: nothing was remembered as sent.
+			unset( $exception );
+		}
+	}
+
+	/**
+	 * Whether ChatPuff may have any of these products: one deleted, or one sent and not forgotten since.
+	 *
+	 * @param int[] $ids the products.
+	 */
+	private function known( array $ids ): bool {
+		foreach ( $ids as $id ) {
+			if ( null === get_post( $id ) || '' !== (string) get_post_meta( $id, self::HASH_META, true ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -140,19 +337,7 @@ final class Knowledge {
 				$kind = (string) $cursor['kind'];
 				$ids  = $this->ids( $kind, $cursor['last_id'], self::PAGE );
 				if ( array() === $ids ) {
-					$all = $this->published( $kind );
-					if ( count( $all ) <= self::MAX_INVENTORY ) {
-						$pairing->send(
-							'PUT',
-							'/integration/v1/knowledge/inventory',
-							array(
-								'kind'         => $kind,
-								'locale'       => $locale,
-								'external_ids' => array_map( 'strval', $all ),
-							)
-						);
-						$this->forget_unpublished( $kind );
-					}
+					$this->send_inventory( $pairing, $kind, $locale );
 					$next              = (int) array_search( $kind, self::KINDS, true ) + 1;
 					$cursor['kind']    = $next < count( self::KINDS ) ? self::KINDS[ $next ] : null;
 					$cursor['last_id'] = 0;
@@ -166,21 +351,7 @@ final class Knowledge {
 				$cursor['checked'] += count( $sources );
 				$changed            = $this->changed( $kind, $sources );
 				if ( array() !== $changed ) {
-					$pairing->send(
-						'PUT',
-						'/integration/v1/knowledge/sources',
-						array(
-							'sources' => array_map(
-								static function ( array $source ): array {
-									unset( $source['hash'] );
-
-									return $source;
-								},
-								$changed
-							),
-						)
-					);
-					$this->remember( $kind, $changed );
+					$this->send_sources( $pairing, $kind, $changed );
 					$cursor['sent'] += count( $changed );
 				}
 				$cursor['last_id'] = max( $ids );
@@ -193,6 +364,60 @@ final class Knowledge {
 		}
 
 		return $cursor;
+	}
+
+	/**
+	 * Sends these sources and remembers them as sent.
+	 *
+	 * @param Pairing  $pairing the signed client.
+	 * @param string   $kind    product, category or page.
+	 * @param Source[] $changed the sources that changed.
+	 *
+	 * @throws Api_Exception When ChatPuff refuses or cannot be reached.
+	 */
+	private function send_sources( Pairing $pairing, string $kind, array $changed ): void {
+		$pairing->send(
+			'PUT',
+			'/integration/v1/knowledge/sources',
+			array(
+				'sources' => array_map(
+					static function ( array $source ): array {
+						unset( $source['hash'] );
+
+						return $source;
+					},
+					$changed
+				),
+			)
+		);
+		$this->remember( $kind, $changed );
+	}
+
+	/**
+	 * Sends what the shop publishes of a kind, so that ChatPuff removes the rest, and forgets the
+	 * hashes of what it no longer publishes.
+	 *
+	 * @param Pairing $pairing the signed client.
+	 * @param string  $kind    product, category or page.
+	 * @param string  $locale  the shop's language.
+	 *
+	 * @throws Api_Exception When ChatPuff refuses or cannot be reached.
+	 */
+	private function send_inventory( Pairing $pairing, string $kind, string $locale ): void {
+		$all = $this->published( $kind );
+		if ( count( $all ) > self::MAX_INVENTORY ) {
+			return;
+		}
+		$pairing->send(
+			'PUT',
+			'/integration/v1/knowledge/inventory',
+			array(
+				'kind'         => $kind,
+				'locale'       => $locale,
+				'external_ids' => array_map( 'strval', $all ),
+			)
+		);
+		$this->forget_unpublished( $kind );
 	}
 
 	/**

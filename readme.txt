@@ -4,7 +4,7 @@ Tags: live chat, chat, customer support, woocommerce, help desk
 Requires at least: 5.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.7.1
+Stable tag: 0.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,7 @@ This plugin connects your shop to **ChatPuff** (https://chatpuff.com), a hosted 
 
 * **When an administrator connects the shop:** the site's address and name, its language and time zone, the address ChatPuff calls to check the site (a REST API route of this plugin), a public key created on your server (the private key never leaves it), and the versions of WordPress, WooCommerce, PHP and the plugin.
 * **Every hour while connected:** the same versions again, as a heartbeat; and, for the AI assistant's knowledge, the published products (name, SKU, categories, price, availability and descriptions), product categories (name, description) and pages (title, content) that changed since the last hour, with their addresses. Nothing about customers or orders.
+* **A minute after a product changes** (from 0.7.2): that product, in the same form, or, when it left the shop, the list of the published products' IDs.
 * **On storefront pages:** visitors' browsers load the chat's script from api.chatpuff.com. What a visitor types in the chat (their name, email address and messages) goes to ChatPuff. For a logged-in customer, the page carries a short-lived token, signed by your server, with the customer's user ID, name and email address, so the chat knows who they are.
 * **When a customer verifies an order in the chat:** ChatPuff asks the plugin about it with a call signed by ChatPuff's own key, and the plugin answers with the order's number, customer ID and billing email address. While the verification lasts (an hour), ChatPuff may ask again for the order's date, status, products and quantities, and tracking numbers and links, which the customer sees in the chat. For a customer signed in to the shop, ChatPuff may list their latest orders (number, date and status) so that they can pick one. No prices, addresses or payment details are sent, and ChatPuff keeps no copy of the details.
 * **In the WordPress admin:** the inbox's script is loaded from api.chatpuff.com. The plugin asks ChatPuff for 15-minute access tokens for the signed-in user; the first time, it sends their user ID and first name with an initial so they can link their ChatPuff account.
@@ -75,6 +76,9 @@ Yes. The plugin reads an order only when ChatPuff asks about one that a customer
 Deactivating hides the chat and keeps the connection, so reactivating needs no new connection. Deleting the plugin disconnects the shop from ChatPuff; its chat history stays in ChatPuff.
 
 == Changelog ==
+
+= 0.7.2 =
+* A product that changes reaches ChatPuff's AI assistant a minute later instead of at the next hourly synchronization: saving it (the editor, quick and bulk edit, an import, the REST API, a scheduled sale), its variations, its stock, and publishing, unpublishing, trashing or deleting it. Only a changed text is sent; a product that leaves the shop leaves the assistant's knowledge. More than 100 products at once start the synchronization instead, which still sends only what changed.
 
 = 0.7.1 =
 * The inbox says "You were signed out. Reload the page to sign in again." when the WordPress session or the page's nonce has ended, instead of "ChatPuff cannot be reached. Trying again…" forever; a token request the site never answers is given up after 30 seconds, so the inbox and the badge go on.

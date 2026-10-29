@@ -24,6 +24,7 @@ final class Plugin {
 		add_filter( 'script_loader_tag', array( Storefront::class, 'script_tag' ), 10, 3 );
 		add_action( Storefront::REPORT_HOOK, array( Storefront::class, 'report' ) );
 		add_action( Knowledge::HOOK, array( Knowledge::class, 'run' ) );
+		Knowledge::watch();
 		add_action( 'before_woocommerce_init', array( self::class, 'declare_compatibility' ) );
 		if ( is_admin() ) {
 			Admin::register();
@@ -57,6 +58,7 @@ final class Plugin {
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( Storefront::REPORT_HOOK );
 		wp_clear_scheduled_hook( Knowledge::HOOK );
+		wp_clear_scheduled_hook( Knowledge::CHANGES_HOOK );
 	}
 
 	/**
