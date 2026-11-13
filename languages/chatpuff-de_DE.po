@@ -348,3 +348,24 @@ msgstr "Synchronisierung abgeschlossen: {sent} Einträge an ChatPuff gesendet."
 #: class-admin.php
 msgid "The synchronization stopped with the error {code}. It is retried automatically."
 msgstr "Die Synchronisierung wurde mit dem Fehler {code} abgebrochen. Sie wird automatisch wiederholt."
+
+#: class-knowledge.php
+msgid "Regular price"
+msgstr "Regulärer Preis"
+
+#. translators: %s: the last day of a sale, as 2026-11-30
+#: class-knowledge.php
+msgid "until %s"
+msgstr "bis %s"
+
+#: class-knowledge.php
+msgid "Current offers"
+msgstr "Aktuelle Angebote"
+
+#: class-knowledge.php
+msgid "Products on sale at the moment:"
+msgstr "Produkte im Angebot im Moment:"
+
+#: class-knowledge.php
+msgid "No product is on sale at the moment."
+msgstr "Kein Produkt ist im Moment im Angebot."

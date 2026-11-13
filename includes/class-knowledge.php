@@ -16,7 +16,9 @@ defined( 'ABSPATH' ) || exit;
  * changed since it was last sent travels, and each kind ends with the inventory of what is
  * published. Nothing about customers or orders is ever sent. A product that changes in the shop
  * does not wait for the next pass (0.7.2): it is noted (watch()) and sent on its own a minute later
- * (send_changes()), with whatever else changed in that minute.
+ * (send_changes()), with whatever else changed in that minute. A sale is written in words, with the
+ * regular price, the cut and the end (0.7.3), and the "Current offers" page source (OFFERS_ID)
+ * lists the products on sale, so that the assistant can say what is on offer.
  *
  * @phpstan-type Source array{kind: string, external_id: string, locale: string, title: string, url: string|null, text: string, hash: string}
  */
@@ -46,6 +48,11 @@ final class Knowledge {
 	/** Identifiers an inventory may list (the contract's limit); a larger kind keeps what ChatPuff has. */
 	private const MAX_INVENTORY = 100000;
 	private const MAX_TEXT      = 60000;
+	/** The "Current offers" page (0.7.3): a page source listing the products on sale, and the option with the hash of what was last sent. */
+	public const OFFERS_ID   = 'chatpuff-offers';
+	public const OFFERS_HASH = 'chatpuff_knowledge_offers';
+	/** Products the offers page lists at most, the largest cuts first. */
+	private const OFFERS_MAX = 200;
 
 	/**
 	 * Whether this request's noted products overflowed: the pass takes them.
@@ -240,7 +247,8 @@ final class Knowledge {
 	}
 
 	/**
-	 * Sends these products where they changed, and the inventory when one that ChatPuff has left.
+	 * Sends these products where they changed, the inventory when one that ChatPuff has left, and
+	 * the offers page where it changed, since a product's sale may have changed it.
 	 *
 	 * @param int[] $ids the products.
 	 */
@@ -263,6 +271,7 @@ final class Knowledge {
 			if ( $this->known( $gone ) ) {
 				$this->send_inventory( $pairing, 'product', $locale );
 			}
+			$this->send_offers( $pairing, $locale );
 		} catch ( Api_Exception $exception ) {
 			// The next pass sends them: nothing was remembered as sent.
 			unset( $exception );
@@ -337,6 +346,9 @@ final class Knowledge {
 				$kind = (string) $cursor['kind'];
 				$ids  = $this->ids( $kind, $cursor['last_id'], self::PAGE );
 				if ( array() === $ids ) {
+					if ( 'page' === $kind && $this->send_offers( $pairing, $locale ) ) {
+						++$cursor['sent'];
+					}
 					$this->send_inventory( $pairing, $kind, $locale );
 					$next              = (int) array_search( $kind, self::KINDS, true ) + 1;
 					$cursor['kind']    = $next < count( self::KINDS ) ? self::KINDS[ $next ] : null;
@@ -404,7 +416,10 @@ final class Knowledge {
 	 * @throws Api_Exception When ChatPuff refuses or cannot be reached.
 	 */
 	private function send_inventory( Pairing $pairing, string $kind, string $locale ): void {
-		$all = $this->published( $kind );
+		$all = array_map( 'strval', $this->published( $kind ) );
+		if ( 'page' === $kind ) {
+			$all[] = self::OFFERS_ID;
+		}
 		if ( count( $all ) > self::MAX_INVENTORY ) {
 			return;
 		}
@@ -414,7 +429,7 @@ final class Knowledge {
 			array(
 				'kind'         => $kind,
 				'locale'       => $locale,
-				'external_ids' => array_map( 'strval', $all ),
+				'external_ids' => $all,
 			)
 		);
 		$this->forget_unpublished( $kind );
@@ -595,9 +610,9 @@ final class Knowledge {
 					if ( is_array( $categories ) && array() !== $categories ) {
 						$lines[] = __( 'Categories', 'chatpuff' ) . ': ' . implode( ', ', array_map( 'strval', $categories ) );
 					}
-					$price = self::plain_text( $product->get_price_html() );
+					$price = $this->price_text( $product );
 					if ( '' !== $price ) {
-						$lines[] = __( 'Price', 'chatpuff' ) . ': ' . str_replace( "\n", ' ', $price );
+						$lines[] = __( 'Price', 'chatpuff' ) . ': ' . $price;
 					}
 					$lines[] = $this->availability( $product );
 					$text    = implode( "\n", $lines ) . "\n\n" . self::plain_text( $product->get_short_description() ) . "\n\n" . self::plain_text( $product->get_description() );
@@ -635,6 +650,176 @@ final class Knowledge {
 		}
 
 		return $sources;
+	}
+
+	/**
+	 * The price line's value: the price as the shop shows it and, for a product on sale, the sale
+	 * price with the regular price, the cut and the end day, "47,20 € (Regular price: 59,00 €, -20%,
+	 * until 2026-11-30)", so that the assistant can say a product is on offer (0.7.3). A product not
+	 * on sale keeps the shop's own price text.
+	 *
+	 * @param \WC_Product $product the product.
+	 */
+	private function price_text( \WC_Product $product ): string {
+		$sale = self::sale( $product );
+		if ( null === $sale ) {
+			return str_replace( "\n", ' ', self::plain_text( $product->get_price_html() ) );
+		}
+		$parts = array( __( 'Regular price', 'chatpuff' ) . ': ' . $sale['regular'], $sale['cut'] );
+		if ( null !== $sale['until'] ) {
+			/* translators: %s: the last day of a sale, as 2026-11-30 */
+			$parts[] = sprintf( __( 'until %s', 'chatpuff' ), $sale['until'] );
+		}
+
+		return $sale['price'] . ' (' . implode( ', ', $parts ) . ')';
+	}
+
+	/**
+	 * A product's sale, while it is on sale: the sale and the regular prices as the shop shows them
+	 * (with or without tax as it chose), the cut, the end day and the cut as a fraction; null
+	 * otherwise. A variable product is described by its variation on sale with the largest cut.
+	 *
+	 * @param \WC_Product $product the product.
+	 *
+	 * @return array{price: string, regular: string, cut: string, until: string|null, fraction: float}|null
+	 */
+	private static function sale( \WC_Product $product ): ?array {
+		if ( ! $product->is_on_sale() ) {
+			return null;
+		}
+		$subject = $product;
+		if ( $product instanceof \WC_Product_Variable ) {
+			$subject = null;
+			$best    = 0.0;
+			foreach ( $product->get_children() as $child_id ) {
+				$variation = wc_get_product( $child_id );
+				if ( ! $variation instanceof \WC_Product || ! $variation->is_on_sale() ) {
+					continue;
+				}
+				$fraction = self::fraction( $variation );
+				if ( $fraction > $best ) {
+					$best    = $fraction;
+					$subject = $variation;
+				}
+			}
+			if ( null === $subject ) {
+				return null;
+			}
+		}
+		$fraction = self::fraction( $subject );
+		if ( $fraction <= 0 ) {
+			return null;
+		}
+		$to = $subject->get_date_on_sale_to();
+
+		return array(
+			'price'    => self::plain_text( wc_price( wc_get_price_to_display( $subject ) ) ),
+			'regular'  => self::plain_text( wc_price( wc_get_price_to_display( $subject, array( 'price' => (float) $subject->get_regular_price() ) ) ) ),
+			'cut'      => '-' . self::percent( $fraction ) . '%',
+			'until'    => $to instanceof \WC_DateTime ? $to->date( 'Y-m-d' ) : null,
+			'fraction' => $fraction,
+		);
+	}
+
+	/**
+	 * How much of the regular price a product's current price takes off, 0.2 for a fifth; 0 when nothing.
+	 *
+	 * @param \WC_Product $product the product or variation.
+	 */
+	private static function fraction( \WC_Product $product ): float {
+		$regular = (float) $product->get_regular_price();
+		$price   = (float) $product->get_price();
+
+		return $regular > 0 && $price < $regular ? ( $regular - $price ) / $regular : 0.0;
+	}
+
+	/**
+	 * A fraction as a percentage without needless decimals: 0.2 gives "20", 0.125 gives "12.5".
+	 *
+	 * @param float $fraction the fraction.
+	 */
+	private static function percent( float $fraction ): string {
+		return rtrim( rtrim( number_format( $fraction * 100, 2, '.', '' ), '0' ), '.' );
+	}
+
+	/**
+	 * Sends the "Current offers" page where it changed (0.7.3): the products on sale, the largest
+	 * cuts first, each with its prices, its cut, its end and its link, or the line that says there
+	 * are none; whether it was sent. The same page again changes nothing, like any other source.
+	 *
+	 * @param Pairing $pairing the signed client.
+	 * @param string  $locale  the shop's language.
+	 *
+	 * @throws Api_Exception When ChatPuff refuses or cannot be reached.
+	 */
+	private function send_offers( Pairing $pairing, string $locale ): bool {
+		$source = $this->offers_source( $locale );
+		if ( null === $source || (string) get_option( self::OFFERS_HASH, '' ) === $source['hash'] ) {
+			return false;
+		}
+		$hash = $source['hash'];
+		unset( $source['hash'] );
+		$pairing->send( 'PUT', '/integration/v1/knowledge/sources', array( 'sources' => array( $source ) ) );
+		update_option( self::OFFERS_HASH, $hash, false );
+
+		return true;
+	}
+
+	/**
+	 * The "Current offers" page: WooCommerce's list of what is on sale, kept to the published
+	 * products that are not hidden, at most OFFERS_MAX of them.
+	 *
+	 * @param string $locale the shop's language.
+	 *
+	 * @return Source|null
+	 */
+	private function offers_source( string $locale ): ?array {
+		$hidden = $this->hidden_product_ids();
+		$sales  = array();
+		foreach ( array_map( 'intval', (array) wc_get_product_ids_on_sale() ) as $id ) {
+			$product = wc_get_product( $id );
+			if ( $product instanceof \WC_Product_Variation ) {
+				$product = wc_get_product( $product->get_parent_id() );
+			}
+			if ( ! $product instanceof \WC_Product || isset( $sales[ $product->get_id() ] ) ) {
+				continue;
+			}
+			if ( 'publish' !== $product->get_status() || 'hidden' === $product->get_catalog_visibility() || in_array( $product->get_id(), $hidden, true ) ) {
+				continue;
+			}
+			$sale = self::sale( $product );
+			if ( null !== $sale ) {
+				$sales[ $product->get_id() ] = array(
+					'product' => $product,
+					'sale'    => $sale,
+				);
+			}
+		}
+		uasort(
+			$sales,
+			static function ( array $a, array $b ): int {
+				$order = $b['sale']['fraction'] <=> $a['sale']['fraction'];
+
+				return 0 !== $order ? $order : $a['product']->get_id() <=> $b['product']->get_id();
+			}
+		);
+		if ( array() === $sales ) {
+			$text = __( 'No product is on sale at the moment.', 'chatpuff' );
+		} else {
+			$lines = array( __( 'Products on sale at the moment:', 'chatpuff' ) );
+			foreach ( array_slice( $sales, 0, self::OFFERS_MAX, true ) as $entry ) {
+				$parts = array( __( 'Regular price', 'chatpuff' ) . ': ' . $entry['sale']['regular'], $entry['sale']['cut'] );
+				if ( null !== $entry['sale']['until'] ) {
+					/* translators: %s: the last day of a sale, as 2026-11-30 */
+					$parts[] = sprintf( __( 'until %s', 'chatpuff' ), $entry['sale']['until'] );
+				}
+				$name    = trim( (string) preg_replace( '/\s+/u', ' ', html_entity_decode( $entry['product']->get_name(), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) ) );
+				$lines[] = $name . ': ' . $entry['sale']['price'] . ' (' . implode( ', ', $parts ) . ') ' . $entry['product']->get_permalink();
+			}
+			$text = implode( "\n", $lines );
+		}
+
+		return self::source( 'page', self::OFFERS_ID, $locale, __( 'Current offers', 'chatpuff' ), '', $text );
 	}
 
 	/**

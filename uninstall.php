@@ -32,6 +32,7 @@ function chatpuff_uninstall_site(): void {
 	wp_clear_scheduled_hook( \ChatPuff\WooCommerce\Knowledge::CHANGES_HOOK );
 	delete_option( \ChatPuff\WooCommerce\Knowledge::CURSOR );
 	delete_option( \ChatPuff\WooCommerce\Knowledge::PENDING );
+	delete_option( \ChatPuff\WooCommerce\Knowledge::OFFERS_HASH );
 	delete_post_meta_by_key( \ChatPuff\WooCommerce\Knowledge::HASH_META );
 	delete_metadata( 'term', 0, \ChatPuff\WooCommerce\Knowledge::HASH_META, '', true );
 }
